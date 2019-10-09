@@ -9,8 +9,8 @@ https://drive.google.com/file/d/1o1ti_SSvYa-IQrBt_nYSS_i9SKzH7K85/view?usp=shari
 
 ### External necessary libraries
 ```bash
-pip install keras
 pip install tensorflow
+pip install keras
 ```
 
 ### Train the model on the WIKI_Age dataset (where the memory leak occurs)
