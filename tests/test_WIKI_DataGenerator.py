@@ -5,6 +5,7 @@ from train import get_tra_val_tes_size
 from utils.data_generators import WIKI_DataGenerator
 
 def test_data_generator(data_generator, set_size, batch_size):
+    """Simulates the generation of the batches."""
     num_batches = math.ceil(set_size / batch_size)
     samples_parsed = 0
 
@@ -41,13 +42,3 @@ test_data_generator(data_generator=validation_generator,
                     set_size=val_size,
                     batch_size=200)
 
-
-# print('Training DataGenerator')
-# for i in range(train_generator.__len__()):
-#     bx, _ = train_generator.__getitem__(index=0)
-#     print('[{}] len(bx[0]): {}, len(bx[1]): {}'.format(i, len(bx[0]), len(bx[1])))
-#
-# print('Validation DataGenerator')
-# for k in range(validation_generator.__len__()):
-#     bx, _ = validation_generator.__getitem__(index=0)
-#     print('[{}] len(bx[0]): {}, len(bx[1]): {}'.format(k, len(bx[0]), len(bx[1])))

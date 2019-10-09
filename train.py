@@ -10,6 +10,8 @@ from utils.semihard_triplet_loss import adapted_semihard_triplet_loss
 
 
 def get_tra_val_tes_size(set_size, split_train_val, split_train_test):
+    """Aux method to get the sizes of the training, validation and test
+    sets."""
     train_size = int(split_train_test * .01 * set_size)
     test_size = int(set_size - train_size)
 
@@ -19,6 +21,7 @@ def get_tra_val_tes_size(set_size, split_train_val, split_train_test):
     return train_size, val_size, test_size
 
 def get_args():
+    """Argument parser."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--dataset-path',
@@ -80,7 +83,7 @@ if __name__ == '__main__':
                   metrics=['accuracy'],
                   optimizer=Adam(lr=args.learning_rate))
 
-    # Configuring the DataGenerator
+    # Configuring the DataGenerator for the training and validation set
     data_gen_params = {'batch_size': args.batch_size,
                        'dim': (args.image_size, args.image_size, args.n_image_channels),
                        'embedding_size': args.embedding_size}
@@ -95,6 +98,7 @@ if __name__ == '__main__':
     train_generator = WIKI_DataGenerator(ages=ages, start_idx=0, set_size=train_size, **data_gen_params)
     validation_generator = WIKI_DataGenerator(ages=ages, start_idx=train_size, set_size=val_size, **data_gen_params)
 
+    # Train the model
     model.fit_generator(generator=train_generator,
                         steps_per_epoch=int(train_size / args.num_epochs),
                         validation_data=validation_generator,
