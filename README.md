@@ -7,6 +7,12 @@ https://drive.google.com/file/d/1o1ti_SSvYa-IQrBt_nYSS_i9SKzH7K85/view?usp=shari
 - The face images are named by an integer, from 0.png to 38780.png 
 - The ages.pickle is an array where the age at position idx is the age of the person in the image idx.png
 
+### External necessary libraries
+```bash
+pip install keras
+pip install tensorflow
+```
+
 ### Train the model on the WIKI_Age dataset (where the memory leak occurs)
 1. Download and extract the WIKI_Age dataset
 2. Clone the project
