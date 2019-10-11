@@ -7,6 +7,7 @@ from utils.data_generators import WIKI_DataGenerator
 
 
 def test_data_generator(data_generator, set_size, batch_size):
+    """Simulates the generation of the batches."""
     num_batches = math.ceil(set_size / batch_size)
     samples_parsed = 0
 
