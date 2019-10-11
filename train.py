@@ -99,4 +99,5 @@ if __name__ == '__main__':
                         steps_per_epoch=int(train_size / args.num_epochs),
                         validation_data=validation_generator,
                         epochs=args.num_epochs,
+                        max_queue_size=2,
                         verbose=1)
