@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 
 from random import shuffle
 
+from keras import backend as K
+
+print("w")
+print(K.tensorflow_backend._get_available_gpus())
 
 class WIKI_DataGenerator(keras.utils.Sequence):
     def __init__(self, ages, start_idx, set_size, batch_size, dim, embedding_size):
@@ -17,7 +21,9 @@ class WIKI_DataGenerator(keras.utils.Sequence):
         self.embedding_size = embedding_size
 
         # self.dataset_path = '/home/sebastiao/Desktop/PERS/DEV/Datasets/wiki_parsed/already_parsed/mtcnn_extracted/'
-        self.dataset_path = '/home/sebastiao/Desktop/DEV/github/master-thesis/wiki_age/dataset/mtcnn_extracted/'
+        # self.dataset_path = '/home/sebastiao/Desktop/DEV/github/master-thesis/wiki_age/dataset/mtcnn_extracted/'
+
+        self.dataset_path = "C:\\Users\\Sebastião Pamplona\\Desktop\\DEV\\datasets\\mtcnn_extracted\\"
 
         self.idxs = [i for i in range(start_idx, start_idx + set_size)]
         shuffle(self.idxs)
@@ -31,7 +37,7 @@ class WIKI_DataGenerator(keras.utils.Sequence):
     def __getitem__(self, index):
         """Generate one batch of data"""
 
-        if self.step == self.__len__():
+        if self.step == self.__len__()-1:
             self.step = 0
             shuffle(self.idxs)
 

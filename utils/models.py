@@ -27,8 +27,8 @@ def create_concatenated_model(params):
     embeddings_network = create_embeddings_model(input_shape=input_shape,
                                                  embedding_size=params.embedding_size)
 
-    plot_model(embeddings_network, to_file='experiments/embeddings_model.png',
-               show_shapes=True, show_layer_names=True, dpi=192)
+    # plot_model(embeddings_network, to_file='experiments/embeddings_model.png',
+    #            show_shapes=True, show_layer_names=True, dpi=192)
 
     input_images = Input(shape=input_shape, name='input_image')  # input layer for images
     input_labels = Input(shape=(1,), name='input_label')  # input layer for labels
@@ -40,7 +40,7 @@ def create_concatenated_model(params):
     concatenated_model = Model(inputs=[input_images, input_labels], outputs=labels_plus_embeddings,
                                name='concatenated_network')
 
-    plot_model(concatenated_model, to_file='experiments/final_model.png',
-               show_shapes=True, show_layer_names=True, dpi=192)
+    # plot_model(concatenated_model, to_file='experiments/final_model.png',
+    #            show_shapes=True, show_layer_names=True, dpi=192)
 
     return concatenated_model

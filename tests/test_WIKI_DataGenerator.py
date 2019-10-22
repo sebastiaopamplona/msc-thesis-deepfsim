@@ -9,6 +9,7 @@ from utils.data_generators import WIKI_DataGenerator
 def test_data_generator(data_generator, set_size, batch_size):
     """Simulates the generation of the batches."""
     num_batches = math.ceil(set_size / batch_size)
+    print("Expected number of batches: {}".format(num_batches))
     samples_parsed = 0
 
     for i in range(num_batches):
@@ -41,7 +42,8 @@ data_generator_params = {'batch_size': 200,
                          'dim': (224, 224, 3),
                          'embedding_size': 64}
 
-dataset_path = '/home/sebastiao/Desktop/PERS/DEV/github/master-thesis/wiki_age/dataset/mtcnn_extracted/'
+# dataset_path = '/home/sebastiao/Desktop/PERS/DEV/github/master-thesis/wiki_age/dataset/mtcnn_extracted/'
+dataset_path = 'C:\\Users\\Sebastião Pamplona\\Desktop\\DEV\\datasets\\mtcnn_extracted\\'
 ages = pickle.load(open('{}ages.pickle'.format(dataset_path), 'rb'))
 set_size = len(ages)
 
@@ -59,10 +61,10 @@ train_generator = WIKI_DataGenerator(ages=ages, start_idx=0, set_size=train_size
 
 
 
-# print('Training DataGenerator')
-# test_data_generator(data_generator=train_generator,
-#                     set_size=train_size,
-#                     batch_size=200)
+print('Training DataGenerator')
+test_data_generator(data_generator=train_generator,
+                    set_size=train_size,
+                    batch_size=80)
 #
 # print('Validation DataGenerator')
 # test_data_generator(data_generator=validation_generator,
