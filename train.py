@@ -1,19 +1,17 @@
+import io
 import argparse
-import os
 import pickle
-import tensorflow as tf
-from tensorboard.plugins import projector
+import keras
 
 from keras.optimizers import Adam
 
 from utils.data_generators import WIKI_DataGenerator
-from utils.models import create_concatenated_model, create_tensorboard_files
+from utils.models import create_concatenated_model
 from utils.semihard_triplet_loss import adapted_semihard_triplet_loss
 
 
 def get_tra_val_tes_size(set_size, split_train_val, split_train_test):
-    """Aux method to get the sizes of the training, validation and test
-    sets."""
+    """Calculates the sizes of the training, validation and test sets."""
     train_size = int(split_train_test * .01 * set_size)
     test_size = int(set_size - train_size)
 
@@ -24,10 +22,26 @@ def get_tra_val_tes_size(set_size, split_train_val, split_train_test):
 
 
 def print_fit_details(set_size, train_size, val_size, test_size):
+    """Prints the size of each set."""
     print('Dataset size:\t\t{}'.format(set_size))
     print('Training size:\t\t{}'.format(train_size))
     print('Validation size:\t{}'.format(val_size))
     print('Testing size:\t\t{}'.format(test_size))
+
+
+def get_vgg16(args):
+    vgg16_model = keras.applications.vgg16.VGG16()
+    vgg16_model.layers.pop()
+    model = keras.Sequential()
+    for layer in vgg16_model.layers:
+        model.add(layer)
+
+    for layer in model.layers:
+        layer.trainable = False
+
+    model.add(keras.layers.Dense(args.embedding_size, name='embeddings'))
+
+    return model
 
 
 def get_args():
@@ -43,6 +57,11 @@ def get_args():
         '--dataset-path',
         type=str,
         required=True,
+        help='path to the WIKI_Age dataset')
+    parser.add_argument(
+        '--embeddings-cnn',
+        default='vgg16',
+        type=str,
         help='path to the WIKI_Age dataset')
     parser.add_argument(
         '--model-dir',
@@ -89,15 +108,16 @@ def get_args():
 
     return args
 
+
 if __name__ == '__main__':
     args = get_args()
 
     # Create the model
     model = create_concatenated_model(args)
-    model.summary()
     model.compile(loss=adapted_semihard_triplet_loss,
                   metrics=['accuracy'],
                   optimizer=Adam(lr=args.learning_rate))
+    model.summary()
 
     # Configuring the DataGenerator for the training and validation set
     data_gen_params = {'batch_size': args.batch_size,
@@ -118,6 +138,8 @@ if __name__ == '__main__':
     model_weights_path = 'experiments/batch_80_epochs_1__default_nn.h5'
 
     print_fit_details(set_size, train_size, val_size, test_size)
+
+    # [Below is tested.]
     if args.train:
         # Train the model
         model.fit_generator(generator=train_generator,
@@ -129,11 +151,9 @@ if __name__ == '__main__':
 
         # Save the weights
         model.save_weights(model_weights_path)
-
-
+        
     else:
-        import io
-
+        # Save the weights from the trained model and produce the embeddings for the test set
         model.load_weights(model_weights_path)
         embeddings = model.predict_generator(generator=test_generator,
                                              steps=int(test_size / args.batch_size) - 1,
@@ -142,12 +162,12 @@ if __name__ == '__main__':
                                              # workers=1,
                                              verbose=1)[:, 1:]
 
-        print(embeddings.shape)
-
-
-        out_v = io.open('experiments/tensorboard/age_embeddings.tsv', 'w', encoding='utf-8')
-        out_m = io.open('experiments/tensorboard/age_metadata.tsv', 'w', encoding='utf-8')
+        # Create the two necessary .tsv files for the Tensorboard visualization
+        out_embeddings = io.open('experiments/tensorboard/age/{}_embeddings.tsv'.format(args.embeddings_cnn), 'w', encoding='utf-8')
+        out_ages = io.open('experiments/tensorboard/age/ages.tsv', 'w', encoding='utf-8')
+        out_filenames = io.open('experiments/tensorboard/age/filenames.tsv', 'w', encoding='utf-8')
 
         for i in range(embeddings.shape[0]):
-            out_m.write('{}\n'.format(ages[train_size + val_size + i]))
-            out_v.write('{}\n'.format('\t'.join([str(x) for x in embeddings[i][:]])))
+            out_ages.write('{}\n'.format(ages[train_size + val_size + i]))
+            out_filenames.write('{}.png\n'.format(train_size + val_size + i))
+            out_embeddings.write('{}\n'.format('\t'.join([str(x) for x in embeddings[i][:]])))
