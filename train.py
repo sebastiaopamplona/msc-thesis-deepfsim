@@ -21,8 +21,9 @@ def get_tra_val_tes_size(set_size, split_train_val, split_train_test):
     return train_size, val_size, test_size
 
 
-def print_fit_details(set_size, train_size, val_size, test_size):
+def print_fit_details(epochs, set_size, train_size, val_size, test_size):
     """Prints the size of each set."""
+    print('Number of epochs:\t{}'.format(epochs))
     print('Dataset size:\t\t{}'.format(set_size))
     print('Training size:\t\t{}'.format(train_size))
     print('Validation size:\t{}'.format(val_size))
@@ -81,7 +82,7 @@ def get_args():
     parser.add_argument(
         '--num-epochs',
         type=int,
-        default=5,  # TODO: changed to speed up testing
+        default=20,  # TODO: changed to speed up testing
         help='number of times to go through the data, default=5')
     parser.add_argument(
         '--embedding-size',
@@ -135,9 +136,12 @@ if __name__ == '__main__':
     validation_generator = WIKI_DataGenerator(ages=ages, start_idx=train_size, set_size=val_size, **data_gen_params)
     test_generator = WIKI_DataGenerator(ages=ages, start_idx=train_size + val_size, set_size=test_size, **data_gen_params)
 
-    model_weights_path = 'experiments/batch_80_epochs_1__default_nn.h5'
+    model_weights_path = 'experiments/{}_epochs_{}_batchsize_{}_trainsize_{}.h5'.format(args.embeddings_cnn,
+                                                                                        args.num_epochs,
+                                                                                        args.batch_size,
+                                                                                        train_size)
 
-    print_fit_details(set_size, train_size, val_size, test_size)
+    print_fit_details(args.num_epochs, set_size, train_size, val_size, test_size)
 
     # [Below is tested.]
     if args.train:
@@ -153,7 +157,8 @@ if __name__ == '__main__':
         model.save_weights(model_weights_path)
         
     else:
-        # Save the weights from the trained model and produce the embeddings for the test set
+        # Load the weights from the trained model and produce the embeddings for the test set
+        print("Predicting with the weights from: {}".format(model_weights_path))
         model.load_weights(model_weights_path)
         embeddings = model.predict_generator(generator=test_generator,
                                              steps=int(test_size / args.batch_size) - 1,
@@ -166,8 +171,11 @@ if __name__ == '__main__':
         out_embeddings = io.open('experiments/tensorboard/age/{}_embeddings.tsv'.format(args.embeddings_cnn), 'w', encoding='utf-8')
         out_ages = io.open('experiments/tensorboard/age/ages.tsv', 'w', encoding='utf-8')
         out_filenames = io.open('experiments/tensorboard/age/filenames.tsv', 'w', encoding='utf-8')
+        # ages + filename
+        out_metadata = io.open('experiments/tensorboard/age/metadata.tsv', 'w', encoding='utf-8')
 
         for i in range(embeddings.shape[0]):
-            out_ages.write('{}\n'.format(ages[train_size + val_size + i]))
-            out_filenames.write('{}.png\n'.format(train_size + val_size + i))
             out_embeddings.write('{}\n'.format('\t'.join([str(x) for x in embeddings[i][:]])))
+            out_ages.write('{}\n'.format(ages[train_size + val_size + i]))
+            out_filenames.write('{}|{}.png\n'.format(ages[train_size + val_size + i], train_size + val_size + i))
+

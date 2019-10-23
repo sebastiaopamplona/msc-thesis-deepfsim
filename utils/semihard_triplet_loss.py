@@ -4,6 +4,13 @@ from tensorflow.python.ops import math_ops, array_ops
 
 from utils.distance_functions import pairwise_distance
 
+def relaxed_age_triplet_selection(labels):
+    threshold = 0.15
+    # relaxed_mask[i][j] = MIN(i, j) >= MAX(i, j) / 1 + threshold
+    return tf.math.greater_equal(tf.math.minimum(labels, tf.transpose(labels)),
+                                 tf.math.divide(tf.math.maximum(labels, tf.transpose(labels)),
+                                                1 + threshold))
+
 
 def masked_maximum(data, mask, dim=1):
     """Computes the axis wise maximum over chosen elements.
@@ -48,7 +55,7 @@ def adapted_semihard_triplet_loss(y_true, y_pred):
     margin = 1.
     labels = y_pred[:, :1]
 
-    labels = tf.cast(labels, dtype='int32')
+    # labels = tf.cast(labels, dtype='int32')
 
     embeddings = y_pred[:, 1:]
     del y_pred
@@ -62,7 +69,8 @@ def adapted_semihard_triplet_loss(y_true, y_pred):
     # Build pairwise squared distance matrix.
     pdist_matrix = pairwise_distance(embeddings, squared=True)
     # Build pairwise binary adjacency matrix.
-    adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+    # adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+    adjacency = relaxed_age_triplet_selection(labels)
     # Invert so we can select negatives only.
     adjacency_not = math_ops.logical_not(adjacency)
 
