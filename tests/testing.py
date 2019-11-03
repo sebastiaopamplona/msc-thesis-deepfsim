@@ -1,7 +1,12 @@
+import cv2
 import pickle
+from PIL import Image
+from numpy import asarray
+from mtcnn.mtcnn import MTCNN
 
-dataset_path = 'C:\\Users\\Sebastião Pamplona\\Desktop\\DEV\\datasets\\mtcnn_extracted\\'
-ages = pickle.load(open('{}ages.pickle'.format(dataset_path), 'rb'))
+from utils.constants import WIKI_ALIGNED_160_ABS, WIKI_ALIGNED_MTCNN_160_ABS, DESKTOP_PATH_ABS
+
+ages = pickle.load(open('{}ages.pickle'.format(WIKI_ALIGNED_160_ABS), 'rb'))
 
 def ask_for_age():
     while True:
@@ -15,48 +20,42 @@ def relaxed_comparison(older_age, younger_age, threshold):
 
 
 def test_threshold(threshold):
-    for age1 in range(0,99):
-        for age2 in range(0,99):
+    for age1 in range(0, 99):
+        for age2 in range(0, 99):
             rc = relaxed_comparison(max(age1, age2), min(age1, age2), threshold)
             if not rc[0]:
                 print('For age {}, the minimum is {}'.format(max(age1, age2), rc[1]))
                 break
 
 
-test_threshold(0.15)
-
-import tensorflow as tf
-
-
-x = [[2]]
-m = tf.matmul(x, x)
-threshold = 0.15
-ages = tf.constant([[17.], [13.], [18.], [77.], [66.], [65.], [99.], [99.]])
-min_age = tf.math.round(tf.math.divide(ages, 1 + threshold))
-
-# print("{}".format(ages))
-print("{}".format(min_age))
-# print("{}".format(tf.transpose(ages)))
-# print("{}".format(tf.math.minimum(ages, tf.transpose(ages))))
-min_transposed1 = tf.transpose(min_age)
-
-print("ages:\t\t{}".format(tf.transpose(ages)))
-print("min age:\t{}".format(min_transposed1))
-
-
-# *
-# relaxed_mask[i][j] = MIN(i, j) >= MAX(i, j) / 1 + threshold
-#
-# *#
+def extract_face(filename, required_size=(160, 160)):
+    # load image from file
+    image = Image.open(filename)
+    # convert to RGB, if needed
+    image = image.convert('RGB')
+    # convert to array
+    pixels = asarray(image)
+    # create the detector, using default weights
+    detector = MTCNN()
+    # detect faces in the image
+    results = detector.detect_faces(pixels)
+    # extract the bounding box from the first face
+    x1, y1, width, height = results[0]['box']
+    # bug fix
+    x1, y1 = abs(x1), abs(y1)
+    x2, y2 = x1 + width, y1 + height
+    # extract the face
+    face = pixels[y1:y2, x1:x2]
+    # resize pixels to the model size
+    image = Image.fromarray(face)
+    image = image.resize(required_size)
+    face_array = asarray(image)
+    return face_array
 
 
+test_face = WIKI_ALIGNED_MTCNN_160_ABS + "0.png"
+print(test_face)
 
-relaxed_mask = tf.math.greater_equal(tf.math.minimum(ages, tf.transpose(ages)),
-                                     tf.math.divide(tf.math.maximum(ages, tf.transpose(ages)),
-                                                    1 + threshold))
-print("{}".format(relaxed_mask))
-for i in range(7):
-    for j in range(7):
-        if relaxed_mask[i][j]:
-            print("{} == {}".format(ages[i], ages[j]))
+mtcnned = extract_face(test_face)
+cv2.imwrite(DESKTOP_PATH_ABS + "0.png", mtcnned)
 
