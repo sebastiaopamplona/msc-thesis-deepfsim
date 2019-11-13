@@ -29,7 +29,7 @@ Descreveres os dados e pré-processamento, incluindo como dividiste em treino e 
     - 5% teste
   - **geração dos batches para treino**:
     - utilizei os *data generators* do *Keras*, utilizados para os 3 conjuntos: treino, validação e teste;
-    - cada *data generator* contém um array de indices, que serve para carregar imagens do dataset através do seu indice (eg.: <indice>.png, com label ages/eigenvalues[indice])
+    - cada *data generator* contém um array de indices, que serve para carregar imagens do dataset através do seu índice (eg.: <índice>.png, com label ages/eigenvalues[índice])
     - tenho 3 [data generators](utils/data/data_generators.py):
         - [AgeDG](utils/data/data_generators.py#L26-L81): critério de semelhança -> idade
         - [AgeIntervalDG](utils/data/data_generators.py#L84-L162): critério de semelhança -> intervalo de idade          
@@ -88,7 +88,7 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
         ai_<AGE INTERVAL (0: none/1: relaxed/2: 5in5/3: 10in10)>_
         u_<UNIFORMIZED TRAINING (0/1)>
         fa_<FACES ALIGNED (0/1)>.h5
-    - **plots da loss no treino e validação**: neste momento só tenho um plot da *val_loss*, com os seguintes parametros:
+    - **plots da loss no treino e validação**: neste momento só tenho um plot da *val_loss*, com os seguintes parâmetros:
         - Criterion:			age
         - Triplet strategy:	adapted_semihard
         - CNN: facenet
@@ -119,5 +119,5 @@ Diz-me também que testes já fizeste ao código para garantir que está tudo a 
         - iterei as imagens processadas a confirmar se o label era igual ao original
         - confirmei se tinham o tamanho pretendido (224x224 ou 160x160)
     - **geração dos batches**:
-        - o ficheiro [tester.py](tests/tester.py) contém os testes feitos aos *Data Generators*; no fundo, simulo uma época, verifico se o número de batches produzido pelo *data generator* é igual ao esperado (*set_size // batch_size*), e no fim de cada época, baralho os indices
+        - o ficheiro [tester.py](tests/tester.py) contém os testes feitos aos *Data Generators*; no fundo, simulo uma época, verifico se o número de batches produzido pelo *data generator* é igual ao esperado (*set_size // batch_size*), e no fim de cada época, baralho os índices
   
