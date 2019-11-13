@@ -13,6 +13,13 @@ def relaxed_age_triplet_selection(labels):
                                                 1 + threshold))
 
 
+def eigenvalues_triplet_selection(labels):
+    # Mean euclidean distance for eigenvalues of
+    # wiki_aligned_mtcnn_uni_relaxed_160/18_58_copy: 2237.6484028731343
+    threshold = 2237
+    return tf.math.less_equal(pairwise_distance(labels), threshold)
+
+
 def masked_maximum(data, mask, dim=1):
     """
     Computes the axis wise maximum over chosen elements.
@@ -70,8 +77,16 @@ def adapted_semihard_triplet_loss(y_true, y_pred):
     # Build pairwise squared distance matrix.
     pdist_matrix = pairwise_distance(embeddings, squared=True)
     # Build pairwise binary adjacency matrix.
-    adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+
+    # EQUAL
+    # adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+
+    # AGE RELAXED
     # adjacency = relaxed_age_triplet_selection(labels)
+
+    # EIGENVALUES
+    adjacency = eigenvalues_triplet_selection(labels)
+
     # Invert so we can select negatives only.
     adjacency_not = math_ops.logical_not(adjacency)
 

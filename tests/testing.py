@@ -1,12 +1,13 @@
+import numpy as np
 import cv2
 import pickle
 from PIL import Image
 from numpy import asarray
 from mtcnn.mtcnn import MTCNN
+import tensorflow_datasets as tfds
+from utils.constants import WIKI_ALIGNED_MTCNN_160_ABS, DESKTOP_PATH_ABS
 
-from utils.constants import WIKI_ALIGNED_160_ABS, WIKI_ALIGNED_MTCNN_160_ABS, DESKTOP_PATH_ABS
-
-ages = pickle.load(open('{}ages.pickle'.format(WIKI_ALIGNED_160_ABS), 'rb'))
+ages = pickle.load(open('{}ages.pickle'.format(WIKI_ALIGNED_MTCNN_160_ABS), 'rb'))
 
 def ask_for_age():
     while True:
@@ -53,9 +54,15 @@ def extract_face(filename, required_size=(160, 160)):
     return face_array
 
 
-test_face = WIKI_ALIGNED_MTCNN_160_ABS + "0.png"
-print(test_face)
+if __name__ == "__main__":
+    eigen_d = pickle.load(open(
+        "C:/Users/Sebastião Pamplona/Desktop/DEV/datasets/treated/age/wiki_aligned_mtcnn_uni_relaxed_224/18_58_copy/eigenvalues.pickle",
+        'rb'))
+    eigen_d_keys = list(eigen_d.keys())
+    eigen_l = []
+    for k in eigen_d_keys:
+        eigen_l.append(eigen_d[k])
 
-mtcnned = extract_face(test_face)
-cv2.imwrite(DESKTOP_PATH_ABS + "0.png", mtcnned)
-
+    eigen_l = np.array(eigen_l)
+    for i in range(100):
+        print("{} - {}".format(min(eigen_l[i]), max(eigen_l[i])))

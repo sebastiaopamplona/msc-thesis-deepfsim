@@ -1,10 +1,14 @@
+import tensorflow as tf
 from keras import Sequential
 import keras
 import keras_vggface
 from keras.models import Model
-from keras.layers import Input, Flatten, Dense, Dropout, concatenate, Conv2D, MaxPooling2D
+from keras.layers import Input, Flatten, Dense, Dropout, concatenate, Conv2D, MaxPooling2D, Lambda
 from keras.utils import plot_model
 from keras.models import load_model
+
+from utils.constants import FACENET_MODEL_ABS, FACENET_WEIGHTS_ABS
+from utils.models.testing_facenet import InceptionResNetV1
 
 
 def create_simple_embeddings_cnn(input_shape, embedding_size):
@@ -44,10 +48,14 @@ def create_vgg16_embeddings_cnn(input_shape, embedding_size):
 
 
 def create_facenet_nn3_embeddings_cnn(input_shape, embedding_size):
-    return load_model("C:\\Users\\Sebastião Pamplona\\Desktop\\DEV\\github\\keras-tripletloss-wiki-age\\experiments\\pretrained_models\\facenet\\NN3\\facenet_keras.h5")
+    # facenet = load_model(FACENET_MODEL_ABS)
+    # facenet.load_weights(FACENET_WEIGHTS_ABS)
+    # print(type(facenet))
+    # m = Sequential(facenet.layers)
+    # print(type(m))
+    return InceptionResNetV1(weights_path=FACENET_WEIGHTS_ABS)
 
-
-def create_concatenated_model(params):
+def create_concatenated_model(args):
     cnn_type_to_function = {
         "simple": create_simple_embeddings_cnn,
         "vgg16": create_vgg16_embeddings_cnn,
@@ -55,11 +63,13 @@ def create_concatenated_model(params):
         "facenet": create_facenet_nn3_embeddings_cnn
     }
 
-    input_shape = (params.image_size, params.image_size, params.n_image_channels)
+    label_size = 1 if args.criterion == "age" else args.n_eigenvalues
+
+    input_shape = (args.image_size, args.image_size, args.n_image_channels)
 
     try:
-        embeddings_network = cnn_type_to_function[params.embeddings_cnn](input_shape=input_shape,
-                                                                         embedding_size=params.embedding_size)
+        embeddings_network = cnn_type_to_function[args.embeddings_cnn](input_shape=input_shape,
+                                                                       embedding_size=args.embedding_size)
 
         embeddings_network.summary()
 
@@ -67,7 +77,7 @@ def create_concatenated_model(params):
         #            show_shapes=True, show_layer_names=True, dpi=192)
 
         input_images = Input(shape=input_shape, name='input_image')  # input layer for images
-        input_labels = Input(shape=(1,), name='input_label')  # input layer for labels
+        input_labels = Input(shape=(label_size,), name='input_label')  # input layer for labels
         embeddings = embeddings_network([input_images])  # output of network -> embeddings
         labels_plus_embeddings = concatenate([input_labels, embeddings],
                                              name='label_embedding')  # concatenating the labels + embeddings
@@ -87,4 +97,18 @@ def create_concatenated_model(params):
 
 if __name__ == "__main__":
     m = create_facenet_nn3_embeddings_cnn(None, None)
-    m.summary()
+    # m.summary()
+
+    # model = tf.keras.Sequential([
+    #     tf.keras.layers.Conv2D(filters=64, kernel_size=2, padding='same', activation='relu', input_shape=(28, 28, 1)),
+    #     tf.keras.layers.MaxPooling2D(pool_size=2),
+    #     tf.keras.layers.Dropout(0.3),
+    #     tf.keras.layers.Conv2D(filters=32, kernel_size=2, padding='same', activation='relu'),
+    #     tf.keras.layers.MaxPooling2D(pool_size=2),
+    #     tf.keras.layers.Dropout(0.3),
+    #     tf.keras.layers.Flatten(),
+    #     tf.keras.layers.Dense(256, activation=None),  # No activation on final dense layer
+    #     tf.keras.layers.Lambda(lambda x: tf.math.l2_normalize(x, axis=1))  # L2 normalize embeddings
+    # ])
+    #
+    # model.summary()

@@ -5,13 +5,15 @@ import time
 import dlib
 import cv2
 import multiprocessing as mp
+import numpy as np
 
 from scipy.io import loadmat
 from datetime import datetime
 from imutils.face_utils import FaceAligner
 
-from utils.constants import WIKI_ALIGNED_224_ABS, WIKI_CROP_PATH_ABS, IMDB_CROP_PATH_ABS, DESKTOP_PATH_ABS
-from utils.utils import to_pickle
+from utils.constants import WIKI_ALIGNED_224_ABS, WIKI_CROP_PATH_ABS, IMDB_CROP_PATH_ABS, DESKTOP_PATH_ABS, \
+    WIKI_ALIGNED_MTCNN_160_ABS, WIKI_ALIGNED_MTCNN_UNI_RELAXED_160_ABS, IMDB_ALIGNED_MTCNN_160_ABS
+from utils.utils import to_pickle, from_pickle, get_label_distribution
 
 IMDB_CROP_PATH_REL = "..\\..\\..\\..\\datasets\\raw\\imdb_crop\\"
 IMDB_ALIGNED_PATH_REL = "..\\..\\..\\..\\datasets\\treated\\age\\imdb_aligned\\"
@@ -21,6 +23,39 @@ shape_predictor = 'shape_predictor_68_face_landmarks.dat'
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(shape_predictor)
 fa = FaceAligner(predictor, desiredFaceWidth=224)
+
+
+# TODO
+# def multi_CPU(function, args, task_size):
+#     num_cpu = mp.cpu_count()
+#     block_size = task_size // num_cpu
+#     rest_block_size = task_size % num_cpu + block_size
+#     processes = []
+#     if task_size % num_cpu == 0:
+#         assert block_size * num_cpu == task_size
+#         for pid in range(num_cpu):
+#             start_index = pid * block_size
+#             end_index = (pid + 1) * block_size
+#             processes.append(mp.Process(target=function, args=(pid, args)))
+
+
+def split_underscore(filename):
+    """
+    Filename format:
+    <int>_<int>.jpg
+    (eg. 10786_31.jpg)
+
+    :param filename: filename
+    :return: int1, int2
+    """
+    return filename.split("_")[0], filename.split("_")[1].split(".")[0]
+
+
+def get_dirs():
+    dirs = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"]
+    for d in range(10, 100):
+        dirs.append(str(d))
+    return dirs
 
 
 def in_age_scope(age, min_age, max_age):
@@ -463,13 +498,89 @@ def get_age_distribution(ages):
     return distr
 
 
+def test_imdb_160_and_ages_chunk(pid, dirs):
+    """
+    Tests if every dir (eg. "00") contains an <dir>_ages_dict.pickle file,
+    and if every image in it is 160x160x3.
+
+    :param pid: process id
+    :param dirs: dirs to test
+    """
+    print("[{}] Treating {} dirs ({} to {})...".format(pid, len(dirs), dirs[0], dirs[len(dirs) - 1]))
+    all_ok = True
+    broken = []
+
+    for d in dirs:
+        files = os.listdir("{}{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d))
+        try:
+            files.remove("{}_ages_dict.pickle".format(d))
+            for f in files:
+                image = Image.open("{}{}\\{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d, f))
+                pixels = np.asarray(image)
+                assert pixels.shape[0] == 160
+                assert pixels.shape[1] == 160
+                assert pixels.shape[2] == 3
+
+            print("[{}] Dir {} OK.".format(pid, d))
+        except ValueError as e:
+            print("[{}] {}".format(pid, e))
+            print("[{}] {} does not have an ages file!".format(pid, d))
+            all_ok = False
+            broken.append(d)
+
+    if all_ok:
+        print("[{}] {} OK".format(pid, dirs))
+    else:
+        print("[{}] BROKEN: {}".format(pid, broken))
+
+
+def test_imdb_160_and_ages_multi_CPU():
+    """
+    Executes function test_imdb_160_and_ages_chunk parallelly.
+    """
+
+    dirs = get_dirs()
+
+    size = len(dirs)
+    num_cpu = mp.cpu_count()
+    block_size = size // num_cpu
+    rest_block_size = size % num_cpu + block_size
+    processes = []
+    if size % num_cpu == 0:
+        assert block_size * num_cpu == size
+        for i in range(num_cpu):
+            start_index = i * block_size
+            end_index = (i + 1) * block_size
+            processes.append(mp.Process(target=test_imdb_160_and_ages_chunk, args=(i, dirs[start_index:end_index])))
+
+    else:
+        assert block_size * (num_cpu - 1) + rest_block_size == size
+        for i in range(num_cpu - 1):
+            start_index = i * block_size
+            end_index = (i + 1) * block_size
+            processes.append(mp.Process(target=test_imdb_160_and_ages_chunk, args=(i, dirs[start_index:end_index])))
+
+        start_index = size - rest_block_size
+        processes.append(mp.Process(target=test_imdb_160_and_ages_chunk, args=(num_cpu - 1, dirs[start_index:])))
+
+    start = int(round(time.time() * 1000))
+    # Run processes
+    for p in processes:
+        p.start()
+
+    # Exit the completed processes
+    for p in processes:
+        p.join()
+
+    end = int(round(time.time() * 1000))
+    print('Time elapsed: {} ms'.format(end - start))
+
+
 def treat_age_dataset_IMDB_multi_CPU():
     """
     Executes function treat_chunk_imdb parallelly.
     """
-    dirs = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"]
-    for d in range(10, 100):
-        dirs.append(str(d))
+    dirs = get_dirs()
 
     size = len(dirs)
     num_cpu = mp.cpu_count()
@@ -515,8 +626,97 @@ def treat_age_dataset_IMDB_multi_CPU():
     '''
 
 
+def rename_imdb():
+    dirs = get_dirs()
+
+    # ages = []
+    # ctr = 0
+    for d in dirs:
+        print("Current: {}... ".format(d), end="")
+        files = os.listdir("{}{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d))
+        files.remove("{}_ages_dict.pickle".format(d))
+        for img in files:
+            num, ctr = split_underscore(img)
+            os.rename("{}{}\\{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d, img),
+                      "{}{}.jpg".format(IMDB_ALIGNED_MTCNN_160_ABS, ctr))
+            # ctr += 1
+            # ages.append(int(age))
+        print("OK")
+
+    # print("ctr: {}".format(ctr)) # ctr: 334144
+    # print("len(ages): {}".format(len(ages))) # len(ages): 334144
+    # to_pickle(ages, "{}ages.pickle".format(IMDB_ALIGNED_MTCNN_160_ABS))
+
+
+def test_renamed_imdb():
+    dirs = get_dirs()
+    ages_list = from_pickle("{}ages.pickle".format(IMDB_ALIGNED_MTCNN_160_ABS))
+    for d in dirs:
+        print("Current: {}... ".format(d), end="")
+        ages_dict_str = "{}_ages_dict.pickle".format(d)
+        files = os.listdir("{}{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d))
+        files.remove(ages_dict_str)
+        ages_dict = from_pickle("{}{}\\{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d, ages_dict_str))
+        for img in files:
+            dict_idx, list_idx = split_underscore(img)
+            assert ages_dict[int(dict_idx)] == ages_list[int(list_idx)]
+
+        print("OK")
+
+
 if __name__ == '__main__':
-    treat_age_dataset_IMDB_multi_CPU()
+    rename_imdb()
+    # print(num_age("10786_31.jpg"))
+    # test_imdb_160_and_ages_multi_CPU()
+
+    # dirs = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"]
+    # for d in range(10, 100):
+    #     dirs.append(str(d))
+    #
+    #
+    # dic = {}
+    # ctr = 0
+    # for d in dirs:
+    #     files = os.listdir("{}{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d))
+    #     dic[ctr] = len(files)
+    #     ctr += 1
+    #
+    # print(dic)
+
+    # ages_dict = from_pickle("{}00\\00_ages_dict.pickle".format(IMDB_ALIGNED_MTCNN_160_ABS))
+    # print(ages_dict)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # treat_age_dataset_IMDB_multi_CPU()
     # for i in range(10):
     #     os.mkdir("{}0{}".format(IMDB_ALIGNED_PATH_REL, i))
     #
