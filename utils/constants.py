@@ -17,6 +17,6 @@ MTCNN_EXTRACTED_COPY_PATH_ABS = DATASETS +          "mtcnn_extracted_COPY\\"
 MTCNN_EXTRACTED_CORRUPTED_PATH_ABS = DATASETS +     "mtcnn_extracted\\corrupted\\"
 MTCNN_EXTRACTED_OUT_AGE_SCOPE_PATH_ABS = DATASETS + "mtcnn_extracted\\out_age_scope\\"
 
-PRETRAINED_MODELS_ABS = "C:\\Users\\Sebastião Pamplona\\Desktop\\DEV\\github\\keras-tripletloss-wiki-age\\experiments\\pretrained_models\\"
+PRETRAINED_MODELS_ABS = "C:\\Users\\Sebastião Pamplona\\Desktop\\DEV\\github\\msc-thesis-deepfsim\\experiments\\pretrained_models\\"
 FACENET_MODEL_ABS = PRETRAINED_MODELS_ABS + "facenet\\NN3\\facenet_keras.h5"
 FACENET_WEIGHTS_ABS = PRETRAINED_MODELS_ABS + "facenet\\NN3\\facenet_keras_weights.h5"
