@@ -96,7 +96,7 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
         - Model name: es_128_e_20_bs_66_ts_19404_s_1_as_1_ar_1_ai_1_u_1_fa_1.h5 
         ![](https://i.ibb.co/s1M56Gh/val-loss.png)
    - ***nota***: o nome do modelo é gerado de acordo com as seguintes regras:
-        es_<EMBEDDING SIZE>_
+        es_< EMBEDDING SIZE >_
         e_<NUMBER OF EPOCHS>_
         bs_<BATCH SIZE>_
         ts_<TRAINSIZE>_
