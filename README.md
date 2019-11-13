@@ -8,14 +8,14 @@ Descreveres os dados e pré-processamento, incluindo como dividiste em treino e 
     - para cada dataset existe uma versão *cropped*, onde os rostos já estão "recortados"; a versão *cropped* foi o meu ponto de partida;
   - ***nota***: o dataset **IMDB** tem 2 problemas:
     - apesar de conter 460,723 imagens de rosto, só existem 20,284 celebridades diferentes, o que reduz a variação, afectando a generalização  
-    - o dataset agrupa as celebridades; ou seja, aparecem ~25 imagens de rosto do Rowan Atkinson, depois ~25 do Christian Bale, etc; o que acontece é que no meio de cada conjunto de ~25 imagens de rosto, aparecem entre 2-6 rostos que não correspondem à celebridade, resultando numa idade que não corresponde ao rosto na fotografia (suspeito que este problema tenha a ver com o algoritmo de *web scraping*); por este motivo, não utilizei este dataset para o critério da idade
+    - o dataset agrupa as celebridades; ou seja, existem ~25 imagens seguidas do rosto de Rowan Atkinson, depois ~25 do de Christian Bale, etc; o que acontece é que no meio de cada conjunto de ~25 imagens de rosto, existem entre 2-6 rostos que não correspondem à celebridade, resultando numa idade que não corresponde ao rosto na fotografia (suspeito que este problema tenha a ver com o algoritmo de *web scraping*); por este motivo, não utilizei este dataset para o critério da idade
   - **pré-processamento** (igual para o WIKI e IMDB, à exceção da extração da idade):
     1. removi as imagens corrompidas
     2. removi as imagens que não continham um rosto
     3. removi os outliers (18 <= idade <= 58)
     4. *data augmentation*
-    5. extração dos labels para um ficheiro .pickle, em array (eg.: ages[] -> ages.pickle ou eigenvalues[] -> eigenvalues.pickle)
-    6. renomeio os ficheiros de 0 ao numero total de imagens, de tal modo que a imagem <idx>.png corresponda ao label na posição idx do array criado no ponto 5. (eg.: para o critério da idade, o rosto na imagem 3541.png tem ages[3541] anos)
+    5. extração dos labels para um ficheiro .pickle, em array (eg.: ages[ ] -> ages.pickle ou eigenvalues[ ] -> eigenvalues.pickle)
+    6. renomeio os ficheiros de 0 ao numero total de imagens, de tal modo que a imagem <índice>.png corresponda ao label na posição índice do array criado no ponto 5. (eg.: para o critério da idade, o rosto na imagem 3541.png tem ages[3541] anos)
   - **data augmentation**:
     1. alinhei os rostos em relação aos olhos, utilizando a class *FaceAligner*, da library *imutils* (https://github.com/jrosebr1/imutils/blob/master/imutils/face_utils/facealigner.py)
     2. para cada imagem já alinhada e *cropped* pelos autores dos datasets, extraí o rosto utilizando a rede MTCNN (https://github.com/ipazc/mtcnn); esta extração estica também o rosto para o tamanho desejado (224x224 ou 160x160, dependendo da rede (VGG16 ou Facenet))
@@ -28,7 +28,7 @@ Descreveres os dados e pré-processamento, incluindo como dividiste em treino e 
     - 5% validação
     - 5% teste
   - **geração dos batches para treino**:
-    - utilizei os *data generators* do *Keras*, utilizados para os 3 conjuntos: treino, validação e teste;
+    - implementei *data generators* do *Keras*, utilizados para os 3 conjuntos: treino, validação e teste;
     - cada *data generator* contém um array de indices, que serve para carregar imagens do dataset através do seu índice (eg.: <índice>.png, com label ages/eigenvalues[índice])
     - tenho 3 [data generators](utils/data/data_generators.py):
         - [AgeDG](utils/data/data_generators.py#L26-L81): critério de semelhança -> idade
@@ -52,7 +52,7 @@ As arquitecturas que testaste e a função de loss que estás a usar (como a imp
     - **como está encaixada no treino**:
         - para cada batch
             1. são formados os triplos válidos (ancora, positivo, negativo)
-            2. são descartados os que não correspondem à especificação de *semihard triplet* (d ( a , p ) < d ( a , n ) < d ( a , p ) + m a r g i n)
+            2. são descartados os que não correspondem à especificação de *semihard triplet*
             3. é calculada a *loss* da batch
     - ***nota sobre a implementação da semihard triplet loss***:
         - a implementação original do tensorflow recebe como argumentos (y_true, y_pred, margin=1.0), onde:
@@ -78,16 +78,16 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
   - **resultados**:
     - só nos últimos testes é que passei a guardar a *val_loss*, porque os resultados nunca faziam muito sentido (a *val_loss* não descia em comparação com a *tra_loss*);
     - ***nota***: o nome do modelo é gerado de acordo com as seguintes regras:
-        es_<EMBEDDING SIZE>_
-        e_<NUMBER OF EPOCHS>_
-        bs_<BATCH SIZE>_
-        ts_<TRAINSIZE>_
-        s_<SHUFFLE (0/1)>_
-        as_<AGE SCOPED (0/1)>_
-        ar_<AGE RELAXED (0/1)>_
-        ai_<AGE INTERVAL (0: none/1: relaxed/2: 5in5/3: 10in10)>_
-        u_<UNIFORMIZED TRAINING (0/1)>
-        fa_<FACES ALIGNED (0/1)>.h5
+      - es_<EMBEDDING SIZE>
+      - e_<NUMBER OF EPOCHS>
+      - bs_<BATCH SIZE>
+      - ts_<TRAINSIZE>
+      - s_<SHUFFLE (0/1)>
+      - as_<AGE SCOPED (0/1)>
+      - ar_<AGE RELAXED (0/1)>
+      - ai_<AGE INTERVAL (0: none/1: relaxed/2: 5in5/3: 10in10)>
+      - u_<UNIFORMIZED TRAINING (0/1)>
+      - fa_<FACES ALIGNED (0/1)>.h5
     - **plots da loss no treino e validação**: neste momento só tenho um plot da *val_loss*, com os seguintes parâmetros:
         - Criterion:			age
         - Triplet strategy:	adapted_semihard
@@ -111,7 +111,7 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
 Diz-me também que testes já fizeste ao código para garantir que está tudo a funcionar:
   - **rede**:
     - **geral**: 
-        - antes de partir para o dataset dos rostos e as redes VGG16 e Facenet, testei a arquitetura (inspirada em: https://github.com/AdrianUng/keras-triplet-loss-mnist) no dataset MNIST  
+        - antes de partir para o dataset dos rostos e as redes VGG16 e Facenet, testei a arquitetura (inspirada em: https://github.com/AdrianUng/keras-triplet-loss-mnist) no dataset MNIST, uma simples simples CNN como *embeddings_model* 
     - **triplet loss function**:
         - depois de treinar a rede, verifico no [tensorboard](https://projector.tensorflow.org/) se os embeddings do mesmo label estão perto uns dos outros; primeiro com o conjunto de teste, com o objectivo de perceber se a rede aprendeu alguma coisa (o que **não** se verificou...); depois de constatar que a rede não aprendeu nada, produzo embeddings para uma amostra do conjunto de treino para confirmar se a rede ajustou os pesos de acordo com a *triplet loss function* (o que se verificou)
   - **dados**:
