@@ -95,6 +95,18 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
         - Testing size: 9072
         - Model name: es_128_e_20_bs_66_ts_19404_s_1_as_1_ar_1_ai_1_u_1_fa_1.h5 
         ![](https://i.ibb.co/s1M56Gh/val-loss.png)
+   - ***nota***: o nome do modelo é gerado de acordo com as seguintes regras:
+        es_<EMBEDDING SIZE>_
+        e_<NUMBER OF EPOCHS>_
+        bs_<BATCH SIZE>_
+        ts_<TRAINSIZE>_
+        s_<SHUFFLE (0/1)>_
+        as_<AGE SCOPED (0/1)>_
+        ar_<AGE RELAXED (0/1)>_
+        ai_<AGE INTERVAL (0: none/1: relaxed/2: 5in5/3: 10in10)>_
+        u_<UNIFORMIZED TRAINING (0/1)>
+        fa_<FACES ALIGNED (0/1)>.h5
+
 
 
 Diz-me também que testes já fizeste ao código para garantir que está tudo a funcionar:
@@ -109,4 +121,4 @@ Diz-me também que testes já fizeste ao código para garantir que está tudo a 
         - confirmei se tinham o tamanho pretendido (224x224 ou 160x160)
     - **geração dos batches**:
         - o ficheiro [tester.py](tests/tester.py) contém os testes feitos aos *Data Generators*; no fundo, simulo uma época, verifico se o número de batches produzido pelo *data generator* é igual ao esperado (*set_size // batch_size*), e no fim de cada época, baralho os índices
-  
+ 
