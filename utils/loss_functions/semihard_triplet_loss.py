@@ -59,14 +59,11 @@ def masked_minimum(data, mask, dim=1):
 
 def adapted_semihard_triplet_loss(y_true, y_pred):
     del y_true
-    # margin = 1.
     margin = .05
     labels = y_pred[:, :1]
-
-    # labels = tf.cast(labels, dtype='int32')
-
     embeddings = y_pred[:, 1:]
     del y_pred
+
     ### Code from Tensorflow function [tf.contrib.losses.metric_learning.triplet_semihard_loss] starts here:
 
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.

@@ -199,7 +199,7 @@ def get_args():
     parser.add_argument(
         '--age-interval',
         type=int,
-        default=0,
+        default=1,
         help='flag (0: none | 1: relaxed | 2: 5in5 | 3: 10in10) indicating if '
              'the training is being done on a age dataset divided into age '
              'intervals, '
@@ -267,7 +267,7 @@ def get_args():
     parser.add_argument(
         '--criterion',
         type=str,
-        default='eigenvalues',
+        default='age',
         help='similarity criterion (supported: age, eigenvalues), '
              'default=age')
 

@@ -22,63 +22,6 @@ def get_standardized_pixels(filename):
     mean, std = pixels.mean(), pixels.std()
     return (pixels - mean) / std
 
-class EigenvaluesDG(keras.utils.Sequence):
-    def __init__(self, dataset_path, eigenvalues, set_size,
-                 batch_size, embedding_size, img_format, img_dimension):
-        assert len(eigenvalues) == set_size
-        self.dataset_path = dataset_path
-        self.eigenvalues = eigenvalues
-        self.set_size = set_size
-        self.batch_size = batch_size
-        self.embedding_size = embedding_size
-        self.img_format = img_format
-        self.img_dimension = img_dimension
-        self.idxs = [i for i in range(0, set_size)]
-        shuffle(self.idxs)
-        self.step = 0
-
-    def __len__(self):
-        """Denotes the number of batches per epoch"""
-
-        return self.set_size // self.batch_size
-
-    def log(self, log_type, msg):
-        print("[{}] {}: {}".format(log_type, self.__class__.__name__, msg))
-
-    def __getitem__(self, index):
-        """Generate one batch of data"""
-        if self.step == self.__len__():
-            self.step = 0
-            self.log(log_type="INFO", msg="shuffling indexes...")
-            shuffle(self.idxs)
-
-        batch_x, batch_y = self.__data_generation()
-        self.step += 1
-
-        return batch_x, batch_y
-
-    def __data_generation(self):
-        """Generates data containing batch_size samples"""
-
-        start = self.step * self.batch_size
-        end = min((self.step + 1) * self.batch_size, self.set_size)
-        batch_x = np.zeros((end - start,
-                            self.img_dimension[0],
-                            self.img_dimension[1],
-                            self.img_dimension[2]))
-        batch_y = np.zeros((end - start, len(self.eigenvalues[0])))
-        in_batch_idx = 0
-        for i in range(start, end):
-            idx = self.idxs[i]
-            filename = '{}{}{}'.format(self.dataset_path, idx, self.img_format)
-            pixels = get_standardized_pixels(filename)
-            batch_x[in_batch_idx] = pixels
-            batch_y[in_batch_idx] = self.eigenvalues[idx]
-            in_batch_idx += 1
-
-        # to match (from model.fit()): x=[x_train, y_train], y=dummy_train
-        return [batch_x, batch_y], np.ones((self.batch_size, self.embedding_size + 1))
-
 
 class AgeDG(keras.utils.Sequence):
     def __init__(self, dataset_path, ages, set_size,
@@ -214,6 +157,64 @@ class AgeIntervalDG(keras.utils.Sequence):
                 batch_x[in_batch_idx] = pixels
                 batch_y[in_batch_idx] = self.age_intervals[idx]
                 in_batch_idx += 1
+
+        # to match (from model.fit()): x=[x_train, y_train], y=dummy_train
+        return [batch_x, batch_y], np.ones((self.batch_size, self.embedding_size + 1))
+
+
+class EigenvaluesDG(keras.utils.Sequence):
+    def __init__(self, dataset_path, eigenvalues, set_size,
+                 batch_size, embedding_size, img_format, img_dimension):
+        assert len(eigenvalues) == set_size
+        self.dataset_path = dataset_path
+        self.eigenvalues = eigenvalues
+        self.set_size = set_size
+        self.batch_size = batch_size
+        self.embedding_size = embedding_size
+        self.img_format = img_format
+        self.img_dimension = img_dimension
+        self.idxs = [i for i in range(0, set_size)]
+        shuffle(self.idxs)
+        self.step = 0
+
+    def __len__(self):
+        """Denotes the number of batches per epoch"""
+
+        return self.set_size // self.batch_size
+
+    def log(self, log_type, msg):
+        print("[{}] {}: {}".format(log_type, self.__class__.__name__, msg))
+
+    def __getitem__(self, index):
+        """Generate one batch of data"""
+        if self.step == self.__len__():
+            self.step = 0
+            self.log(log_type="INFO", msg="shuffling indexes...")
+            shuffle(self.idxs)
+
+        batch_x, batch_y = self.__data_generation()
+        self.step += 1
+
+        return batch_x, batch_y
+
+    def __data_generation(self):
+        """Generates data containing batch_size samples"""
+
+        start = self.step * self.batch_size
+        end = min((self.step + 1) * self.batch_size, self.set_size)
+        batch_x = np.zeros((end - start,
+                            self.img_dimension[0],
+                            self.img_dimension[1],
+                            self.img_dimension[2]))
+        batch_y = np.zeros((end - start, len(self.eigenvalues[0])))
+        in_batch_idx = 0
+        for i in range(start, end):
+            idx = self.idxs[i]
+            filename = '{}{}{}'.format(self.dataset_path, idx, self.img_format)
+            pixels = get_standardized_pixels(filename)
+            batch_x[in_batch_idx] = pixels
+            batch_y[in_batch_idx] = self.eigenvalues[idx]
+            in_batch_idx += 1
 
         # to match (from model.fit()): x=[x_train, y_train], y=dummy_train
         return [batch_x, batch_y], np.ones((self.batch_size, self.embedding_size + 1))
