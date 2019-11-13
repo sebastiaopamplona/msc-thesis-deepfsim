@@ -78,7 +78,7 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
   - **resultados**:
     - só nos últimos testes é que passei a guardar a *val_loss*, porque os resultados nunca faziam muito sentido (a *val_loss* não descia em comparação com a *tra_loss*);
     - ***nota***: legenda do nome do modelo:
-      - es: <EMBEDDING SIZE>
+    - es: <EMBEDDING SIZE>
       - e: <NUMBER OF EPOCHS>
       - bs: <BATCH SIZE>
       - ts: <TRAINSIZE>
