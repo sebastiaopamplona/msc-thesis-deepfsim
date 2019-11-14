@@ -109,7 +109,7 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
           - fa_< FACES ALIGNED (0/1) >.h5
         
         
-      2. neste teste, a divisão do dataset em treino/validação/teste não correspondeu aos 90/5/5, pois o conjunto de treino está "uniformizado", e o valor máximo para o mesmo número de intervalos é 3234; ou seja, conjunto de treino tem o mesmo número de imagens para cada intervalo de idades, para que, em cada batch, exista o mesmo número de imagens de cada intervalo (i.e.: training size: 19404, #intervalos: 6, #images de cada intervalo: 19404/6=3234, batch size: 66 -> cada batch contém 11 imagens de cada intervalo; esta técnica é utilizada na literatura para melhorar o treino ([Facenet](https://arxiv.org/pdf/1503.03832.pdf), secção 3.2 Triplet Selection: "*In our experiments we sample the training data such that around 40 faces are selected per identity per mini-batch.*")
+      2. neste teste, a divisão do dataset em treino/validação/teste não correspondeu aos 90/5/5, pois o conjunto de treino está "uniformizado", e o valor máximo para o mesmo número de intervalos é 3234; ou seja, o conjunto de treino tem o mesmo número de imagens para cada intervalo de idades, para que, em cada batch, exista o mesmo número de imagens de cada intervalo (i.e.: training size: 19404, #intervalos: 6, #images de cada intervalo: 19404/6=3234, batch size: 66 -> cada batch contém 11 imagens de cada intervalo; esta técnica é utilizada na literatura para melhorar o treino ([Facenet](https://arxiv.org/pdf/1503.03832.pdf), secção 3.2 Triplet Selection: "*In our experiments we sample the training data such that around 40 faces are selected per identity per mini-batch.*")
         
 
 
