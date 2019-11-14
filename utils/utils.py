@@ -4,6 +4,7 @@ import statistics
 import math
 import pickle
 import random
+import keras
 
 from PIL import Image
 
@@ -156,7 +157,7 @@ def get_args():
     parser.add_argument(
         '--num-epochs',
         type=int,
-        default=20,
+        default=150,
         help='number of times to train on the data, '
              'default=20')
 
@@ -231,6 +232,14 @@ def get_args():
         help='embeddings cnn id (eg. vgg16, facenet, small_cnn), '
              'default=facenet')
 
+    # OPTIMIZER
+    parser.add_argument(
+        '--optimizer',
+        default="Adam",
+        type=str,
+        help='optimizer (eg. Adam, SGD, RMSprop (CASE SENSITIVE!)), '
+             'default=Adam')
+
     # LEARNING RATE
     parser.add_argument(
         '--learning-rate',
@@ -292,19 +301,61 @@ def get_args():
     return args
 
 
+def get_parameters_details(args, set_size, tra_sz, val_sz, tes_sz):
+    """Returns a string with the details of a training session."""
+    details = ""
+    details += '[Criterion]: {}\n'.format(args.criterion)
+    if args.criterion == "age":
+        details += '[Age scoped]: {}\n'.format(bool(args.age_scoped))
+        details += '[Age relaxed]: {}\n'.format(bool(args.age_relaxed))
+        details += '[Age interval]: {}\n'.format(bool(args.age_interval))
+
+    details += "\n"
+    details += '[Dataset size]: {}\n'.format(set_size)
+    details += '[Training size]: {}\n'.format(tra_sz)
+    details += '[Validation size]: {}\n'.format(val_sz)
+    details += '[Testing size]: {}\n'.format(tes_sz)
+    details += '[Faces aligned]: {}\n'.format(bool(args.face_aligned))
+    details += '[Uniformized]: {}\n'.format(bool(args.uniformized))
+    details += "\n"
+    details += '[Embedding size]: {}\n'.format(args.embedding_size)
+    details += '[CNN]: {}\n'.format(args.embeddings_cnn)
+    details += '[Triplet strategy]: {}\n'.format(args.triplet_strategy)
+    details += '[Number of epochs]: {}\n'.format(args.num_epochs)
+    details += '[Batch size]: {}\n'.format(args.batch_size)
+    details += '[Optimizer]: {}\n'.format(args.optimizer)
+    details += '[Learning rate]: {}\n'.format(args.learning_rate)
+    details += '[Shuffle]: {}\n'.format(bool(args.shuffle))
+    details += "\n"
+    experiments_path = "experiments/{}/{}/{}/".format(args.dataset,
+                                                      args.criterion,
+                                                      args.triplet_strategy)
+    model_path = "{}models/{}/".format(experiments_path, args.embeddings_cnn)
+    model_name = get_model_name(args, tra_sz)
+    details += '[Model name]: {}\n'.format(model_name)
+    details += '[Experiments path]: {}\n'.format(experiments_path)
+    details += '[Model path]: {}\n'.format(model_path)
+
+    return experiments_path, model_path, model_name, details
+
+
 def print_parameters(args, set_size, tra_sz, val_sz, tes_sz):
     """Prints the details of a training session."""
 
-    print('Criterion:\t\t\t{}'.format(args.criterion))
+    print(ge)
+
+    print('Criterion:\t\t{}'.format(args.criterion))
     print('Triplet strategy:\t{}'.format(args.triplet_strategy))
-    print('CNN:\t\t\t\t{}'.format(args.embeddings_cnn))
+    print('CNN:\t\t\t{}'.format(args.embeddings_cnn))
     print('Embedding size:\t\t{}'.format(args.embedding_size))
     print('Number of epochs:\t{}'.format(args.num_epochs))
+    print('Optimizer:\t\t{}'.format(args.optimizer))
+    print('Learning rate:\t\t{}'.format(args.learning_rate))
     print('Batch size:\t\t\t{}'.format(args.batch_size))
-    print('Shuffle:\t\t\t{}'.format(bool(args.shuffle)))
+    print('Shuffle:\t\t{}'.format(bool(args.shuffle)))
     print('Faces aligned:\t\t{}'.format(bool(args.face_aligned)))
     if args.criterion == "age":
-        print('Age scoped:\t\t\t{}'.format(bool(args.age_scoped)))
+        print('Age scoped:\t\t{}'.format(bool(args.age_scoped)))
         print('Age relaxed:\t\t{}'.format(bool(args.age_relaxed)))
         print('Age interval:\t\t{}'.format(bool(args.age_interval)))
     print('Uniformized:\t\t{}'.format(bool(args.uniformized)))
@@ -319,9 +370,9 @@ def print_parameters(args, set_size, tra_sz, val_sz, tes_sz):
     model_path = "{}models/{}/".format(experiments_path, args.embeddings_cnn)
     model_name = get_model_name(args, tra_sz)
     print()
-    print('Model name:\t\t{}'.format(model_name))
-    print('Experiments path:\t\t{}'.format(experiments_path))
-    print('Model path:\t\t{}'.format(model_path))
+    print('Model name:\t\t\t{}'.format(model_name))
+    print('Experiments path:\t{}'.format(experiments_path))
+    print('Model path:\t\t\t{}'.format(model_path))
 
     return experiments_path, model_path, model_name
 
@@ -351,6 +402,39 @@ def get_in_out_labels(args):
         return in_labels, in_sz, out_labels, len(out_labels)
     else:
         raise Exception('Interval {} not supported'.format(args.age_interval))
+
+def get_optimizers_dict(learning_rate=0.001, beta_1=0.9, beta_2=0.999, amsgrad=False,
+                        momentum=0.9, nesterov=False,
+                        rho=0.9):
+    """
+
+    For Adam
+    :param learning_rate: learning rate
+    :param beta_1: float, 0 < beta < 1; generally close to
+    :param beta_2: float, 0 < beta < 1; generally close to 1
+    :param amsgrad: boolean. Whether to apply the AMSGrad variant of this algorithm from the paper
+                    "On the Convergence of Adam and Beyond"
+
+    For SGD
+    :param momentum: float >= 0. Parameter that accelerates SGD in the relevant direction and dampens oscillations
+    :param nesterov: boolean; whether to apply Nesterov momentum
+
+    For RMSprop
+    :param rho: float >= 0
+
+    :return: a dictionary mapping the name of the optimizer to the keras.optimizer
+    """
+
+    assert 0.0 < beta_1 < 1.
+    assert 0.0 < beta_2 < 1.
+    assert 0.0 <= momentum
+    assert 0.0 <= rho
+
+    return {
+        "Adam": keras.optimizers.Adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2, amsgrad=amsgrad),
+        "SGD": keras.optimizers.SGD(lr=learning_rate, decay=1e-6, momentum=momentum, nesterov=True),
+        "RMSprop": keras.optimizers.RMSprop(lr=learning_rate, rho=rho)
+    }
 
 
 def get_labels(args):

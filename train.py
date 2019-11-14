@@ -1,15 +1,15 @@
 import io
 import os
 
-from keras.optimizers import Adam
 from keras.callbacks.callbacks import ModelCheckpoint
 
-from utils.data.data_generators import EigenvaluesDG
 from utils.loss_functions.semihard_triplet_loss import adapted_semihard_triplet_loss
+from utils.models.callbacks import NotifyWhileAway
 from utils.models.models import create_concatenated_model
-from utils.utils import get_args, get_argsDG, get_labels, get_tra_val_tes_size, get_dgs, get_in_out_labels, \
-    get_model_name, print_parameters, get_path_checkpoints, get_path_embeddings
-import tests.tester
+from utils.utils import get_args, get_argsDG, get_labels, get_tra_val_tes_size, get_dgs, \
+    get_in_out_labels, \
+    get_path_checkpoints, get_path_embeddings, \
+    get_optimizers_dict, get_parameters_details
 
 if __name__ == '__main__':
     args = get_args()
@@ -17,8 +17,8 @@ if __name__ == '__main__':
     # Create the model
     model = create_concatenated_model(args)
     model.compile(loss=adapted_semihard_triplet_loss,
-                  optimizer=Adam(lr=args.learning_rate))
-    model.summary()
+                  optimizer=get_optimizers_dict(learning_rate=args.learning_rate)[args.optimizer])
+    # model.summary()
 
     # Configuring the DataGenerator for the training, validation and test set
     argsDG = get_argsDG(args)
@@ -57,12 +57,23 @@ if __name__ == '__main__':
         raise Exception('Interval {} not supported OR Criterion {} not supported'
                         .format(args.age_interval, args.criterion))
 
-    experiments_path, model_path, model_name = print_parameters(args, sz, tra_sz, val_sz, tes_sz)
+    experiments_path, model_path, model_name, details = get_parameters_details(args,
+                                                                               sz,
+                                                                               tra_sz,
+                                                                               val_sz,
+                                                                               tes_sz)
+    print(details)
+    f = open("C:/Users/Sebastião Pamplona/Desktop/to_sync_w_google_drive/training_iter_1.txt", "a+")
+    for i in range(3):
+        f.write("{}\n".format("=" * 80))
+    f.write("{}\n".format(details))
+    f.close()
 
     # Train the model
     if args.train:
         print("Training ...")
-        checkpoints_path = get_path_checkpoints(model_path, model_name)
+        # checkpoints_path = get_path_checkpoints(model_path, model_name)
+        checkpoints_path = "E:/SebastiaoPamplona/training_iter_1/{}/".format(args.optimizer)
         try:
             os.mkdir(model_path + model_name.split(".")[0])
         except FileExistsError:
@@ -74,7 +85,7 @@ if __name__ == '__main__':
 
 
         # Create callback to save weights after each epoch
-        weights_callback = ModelCheckpoint(checkpoints_path + "weights_epoch_{epoch:02d}_val-loss_{val_loss:.4f}.h5",
+        weights_callback = ModelCheckpoint(checkpoints_path + "weights_e_{epoch:02d}_tra-loss_{loss:.4f}_val-loss_{val_loss:.4f}.h5",
                                            monitor='val_loss',
                                            verbose=0,
                                            save_best_only=False,
@@ -89,7 +100,7 @@ if __name__ == '__main__':
                             epochs=args.num_epochs,
                             max_queue_size=1,
                             verbose=1,
-                            callbacks=[weights_callback])
+                            callbacks=[weights_callback, NotifyWhileAway(args.num_epochs)])
 
         # Save the weights
         model.save_weights(model_path + model_name)

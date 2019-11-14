@@ -64,7 +64,8 @@ def adapted_semihard_triplet_loss(y_true, y_pred):
     embeddings = y_pred[:, 1:]
     del y_pred
 
-    ### Code from Tensorflow function [tf.contrib.losses.metric_learning.triplet_semihard_loss] starts here:
+    ### Code from Tensorflow function
+    ### [tf.contrib.losses.metric_learning.triplet_semihard_loss] starts here:
 
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.
     # lshape=array_ops.shape(labels)
@@ -76,13 +77,13 @@ def adapted_semihard_triplet_loss(y_true, y_pred):
     # Build pairwise binary adjacency matrix.
 
     # EQUAL
-    # adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+    adjacency = math_ops.equal(labels, array_ops.transpose(labels))
 
     # AGE RELAXED
     # adjacency = relaxed_age_triplet_selection(labels)
 
     # EIGENVALUES
-    adjacency = eigenvalues_triplet_selection(labels)
+    # adjacency = eigenvalues_triplet_selection(labels)
 
     # Invert so we can select negatives only.
     adjacency_not = math_ops.logical_not(adjacency)
