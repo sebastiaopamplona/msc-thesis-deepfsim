@@ -97,16 +97,17 @@ Os parâmetros de treino (épocas, parâmetros do optimizador) e os resultados (
         ![](https://i.ibb.co/s1M56Gh/val-loss.png)
    - ***notas***: 
       1. o nome do modelo é gerado de acordo com as seguintes regras:
-        - es_< EMBEDDING SIZE >_
-        - e_< NUMBER OF EPOCHS >_
-        - bs_< BATCH SIZE >_
-        - ts_< TRAINSIZE >_
-        - s_< SHUFFLE (0/1) >_
-        - as_< AGE SCOPED (0/1) >_
-        - ar_< AGE RELAXED (0/1) >_
-        - ai_< AGE INTERVAL (0: none/1: relaxed/2: 5in5/3: 10in10) >_
-        - u_< UNIFORMIZED TRAINING (0/1) >
-        - fa_< FACES ALIGNED (0/1) >.h5
+          - es_< EMBEDDING SIZE >_
+          - e_< NUMBER OF EPOCHS >_
+          - bs_< BATCH SIZE >_
+          - ts_< TRAINSIZE >_
+          - s_< SHUFFLE (0/1) >_
+          - as_< AGE SCOPED (0/1) >_
+          - ar_< AGE RELAXED (0/1) >_
+          - ai_< AGE INTERVAL (0: none/1: relaxed/2: 5in5/3: 10in10) >_
+          - u_< UNIFORMIZED TRAINING (0/1) >
+          - fa_< FACES ALIGNED (0/1) >.h5
+        
         
       2. neste teste, a divisão do dataset em treino/validação/teste não correspondeu aos 90/5/5, pois o conjunto de treino está "uniformizado", e o valor máximo para o mesmo número de intervalos é 3234; ou seja, conjunto de treino tem o mesmo número de imagens para cada intervalo de idades, para que, em cada batch, exista o mesmo número de imagens de cada intervalo (i.e.: training size: 19404, #intervalos: 6, #images de cada intervalo: 19404/6=3234, batch size: 66 -> cada batch contém 11 imagens de cada intervalo; esta técnica é utilizada na literatura para melhorar o treino ([Facenet](https://arxiv.org/pdf/1503.03832.pdf), secção 3.2 Triplet Selection: "*In our experiments we sample the training data such that around 40 faces are selected per identity per mini-batch.*")
         
