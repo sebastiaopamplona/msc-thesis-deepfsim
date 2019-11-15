@@ -126,3 +126,12 @@ Diz-me também que testes já fizeste ao código para garantir que está tudo a 
     - **geração dos batches**:
         - o ficheiro [tester.py](tests/tester.py) contém os testes feitos aos *Data Generators*; no fundo, simulo uma época, verifico se o número de batches produzido pelo *data generator* é igual ao esperado (*set_size // batch_size*), e no fim de cada época, baralho os índices
  
+# 2ª Iteração
+Uma forma de resolver o problema será teres mais dados. Isso podes conseguir com data augmentation (que não parece ser o que estás a fazer, apesar de teres uma secção com esse nome no readme)
+  - interpretei mal o conceito de *data augmentation*; vou experimentar nos próximos testes
+
+Também podes simplificar a rede. No Readme não percebo qual é a rede que estás a treinar. Usas a VGG16 ou Facenet para obter 64 features e acrescentas a label, mas depois treinas uma rede para te dar o vector final? Ou estás a treinar a VGG16 ou a Facenet com isto?
+  - estou a treinar a VGG16 ou Facenet com a arquitetura concatenada (os últimos testes foram feitos usando a Facenet (com a versão InceptionResNetV1), que produz 128 features; adicionei uma camada de normalização L2 no final da rede, tal como foi feito no paper da Facenet); ou seja, neste caso, a rede concatenada produz um vector de 129 dimensões (128 features + 1 label), e treina o *embeddings model* (Facenet); depois de treinar a rede concatenada, carrego os pesos apenas da rede dos embeddings (VGG16 ou Facenet) para uma VGG16 ou Facenet, e produzo o vector de features que eu quero obter, para testar na estrutura de dados métrica
+
+Finalmente, há métodos de regularização eficazes, como dropout ou batch normalization, que podem ajudar no overfitting, mas estes podem ter efeitos indesejados no resultado
+  - a Facenet já utiliza dropout e batch normalization (o código da criação da rede está [aqui](utils/models/facenet.py#L105-L217))
