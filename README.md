@@ -8,7 +8,7 @@ Também podes simplificar a rede. No Readme não percebo qual é a rede que est�
   - na imagem a cima, o "*embeddings_model*" é a rede que produz o vector de features, que pode ser a VGG16 ou a Facenet (**nota**: neste caso, o *embeddings_model* recebe imagens 224x224x3 e produz um vector de 64 features, mas no último teste está a receber imagens de 160x160x3 e a produzir um vector de 128 features)
   - nos últimos testes, o *embeddings_model* foi a Facenet (com a versão InceptionResNetV1), que produz um vector de 128 features (adicionei uma camada de normalização L2 no final da rede, tal como foi feito no paper da Facenet)
   - ou seja, neste caso, a rede concatenada produz um vector de 129 dimensões (1 label + 128 features), e treina o *embeddings model* (Facenet)
-  - depois de treinar a rede concatenada, carrego os pesos apenas da rede dos embeddings (VGG16 ou Facenet) para uma VGG16 ou Facenet, e produzo o vector de features que eu quero obter, para testar na estrutura de dados métrica
+  - depois de treinar a rede concatenada, carrego os pesos apenas do *embeddings_model* para uma VGG16 ou Facenet, e produzo o vector de features que eu quero obter, para testar na estrutura de dados métrica
 
 Finalmente, há métodos de regularização eficazes, como dropout ou batch normalization, que podem ajudar no overfitting, mas estes podem ter efeitos indesejados no resultado
   - a Facenet já utiliza dropout e batch normalization (o código da criação da rede está [aqui](utils/models/facenet.py#L105-L217))
