@@ -13,13 +13,6 @@ Também podes simplificar a rede. No Readme não percebo qual é a rede que est�
 Finalmente, há métodos de regularização eficazes, como dropout ou batch normalization, que podem ajudar no overfitting, mas estes podem ter efeitos indesejados no resultado
   - a Facenet já utiliza dropout e batch normalization (o código da criação da rede está [aqui](utils/models/facenet.py#L105-L217))
 
-#
-#
-#
-#
-#
-#
-
 # 1ª Iteração
 Descreveres os dados e pré-processamento, incluindo como dividiste em treino e validação, se fizeste data augmentation (e como) e a geração dos batches para treino:
   - **dados**:
