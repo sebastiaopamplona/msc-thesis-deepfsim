@@ -11,7 +11,7 @@ Também podes simplificar a rede. No Readme não percebo qual é a rede que est�
   - depois de treinar a rede concatenada, carrego os pesos apenas do *embeddings_model* para uma VGG16 ou Facenet, e produzo o vector de features que eu quero obter, para testar na estrutura de dados métrica
 
 Finalmente, há métodos de regularização eficazes, como dropout ou batch normalization, que podem ajudar no overfitting, mas estes podem ter efeitos indesejados no resultado
-  - a Facenet já utiliza dropout e batch normalization (a implementação da Facenet, versão InceptionResNetV1, foi retirada [deste repositório](https://github.com/nyoki-mtl/keras-facenet/blob/master/code/inception_resnet_v1.py) ; no meu projecto, o código da criação da rede está [aqui](utils/models/facenet.py#L105-L217))
+  - a Facenet já utiliza dropout e batch normalization (a implementação da Facenet, versão InceptionResNetV1, foi retirada [deste repositório](https://github.com/nyoki-mtl/keras-facenet/blob/master/code/inception_resnet_v1.py), onde a única alteração foi a [adição da camada de normalização L2 no final](utils/models/facenet.py#L211-L214); no meu projecto, o código da criação da rede está [aqui](utils/models/facenet.py#L109-L221))
 
 # 1ª Iteração
 Descreveres os dados e pré-processamento, incluindo como dividiste em treino e validação, se fizeste data augmentation (e como) e a geração dos batches para treino:
