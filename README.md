@@ -5,7 +5,7 @@ Uma forma de resolver o problema será teres mais dados. Isso podes conseguir co
 Também podes simplificar a rede. No Readme não percebo qual é a rede que estás a treinar. Usas a VGG16 ou Facenet para obter 64 features e acrescentas a label, mas depois treinas uma rede para te dar o vector final? Ou estás a treinar a VGG16 ou a Facenet com isto?
   - estou a treinar a VGG16 ou Facenet com a rede concatenada (que está a baixo):
   ![](https://i.ibb.co/bz9MSyk/final-model.png)
-  - na imagem a cima, o "*embeddings_model*" é a rede que produz o vector de features, que pode ser a VGG16 ou a Facenet
+  - na imagem a cima, o "*embeddings_model*" é a rede que produz o vector de features, que pode ser a VGG16 ou a Facenet (**nota**: neste caso, a rede recebe imagens 224x224x3 e produz um vector de 64 features, mas no último teste está a receber imagens de 160x160x3 e a produzir um vector de 128 features)
   - os últimos testes foram feitos usando a Facenet (com a versão InceptionResNetV1), que produz um vector de 128 features (adicionei uma camada de normalização L2 no final da rede, tal como foi feito no paper da Facenet)
   - ou seja, neste caso, a rede concatenada produz um vector de 129 dimensões (128 features + 1 label), e treina o *embeddings model* (Facenet)
   - depois de treinar a rede concatenada, carrego os pesos apenas da rede dos embeddings (VGG16 ou Facenet) para uma VGG16 ou Facenet, e produzo o vector de features que eu quero obter, para testar na estrutura de dados métrica
