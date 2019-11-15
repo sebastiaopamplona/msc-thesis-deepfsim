@@ -1,3 +1,7 @@
+"""
+from: https://github.com/nyoki-mtl/keras-facenet/blob/master/code/inception_resnet_v1.py
+"""
+
 from functools import partial
 
 from keras.models import Model
