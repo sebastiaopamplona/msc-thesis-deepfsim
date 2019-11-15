@@ -8,7 +8,7 @@ from keras.utils import plot_model
 from keras.models import load_model
 
 from utils.constants import FACENET_MODEL_ABS, FACENET_WEIGHTS_ABS
-from utils.models.testing_facenet import InceptionResNetV1
+from utils.models.facenet import InceptionResNetV1
 
 
 def create_simple_embeddings_cnn(input_shape, embedding_size):
