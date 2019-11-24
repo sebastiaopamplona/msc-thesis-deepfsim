@@ -13,12 +13,12 @@ from utils.utils import get_args, get_argsDG, get_labels, get_tra_val_tes_size, 
 
 if __name__ == '__main__':
     args = get_args()
-
+    print(args.dataset_path)
     # Create the model
     model = create_concatenated_model(args)
     model.compile(loss=adapted_semihard_triplet_loss,
                   optimizer=get_optimizers_dict(learning_rate=args.learning_rate)[args.optimizer])
-    # model.summary()
+    model.summary()
 
     # Configuring the DataGenerator for the training, validation and test set
     argsDG = get_argsDG(args)
@@ -41,8 +41,12 @@ if __name__ == '__main__':
         #                                               split_train_val=90,
         #                                               split_train_test=100)
 
-        tra_sz = 3234 * len(in_labels)   # TODO: hardcoded!
-        val_sz = 264 * len(in_labels)    # TODO: hardcoded!
+        if "augmented" not in args.dataset_path:
+            tra_sz = 3234 * len(in_labels)   # TODO: hardcoded!
+            val_sz = 264 * len(in_labels)    # TODO: hardcoded!
+        else:
+            tra_sz = 9900 * len(in_labels)  # TODO: hardcoded!
+            val_sz = 594 * len(in_labels)  # TODO: hardcoded!
         tes_sz = out_sz
         tra_dg, val_dg, tes_dg = get_dgs(labels=None,
                                          labels_in=in_labels,

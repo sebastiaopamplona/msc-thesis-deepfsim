@@ -39,8 +39,9 @@ def create_vgg16_embeddings_cnn(input_shape, embedding_size):
     for layer in vgg16_model.layers:
         model.add(layer)
 
-    # for layer in model.layers:
-    #     layer.trainable = False
+    for i in range(len(model.layers)-2):
+        # print(type(model.layers[i]))
+        model.layers[i].trainable = False
 
     model.add(Dense(embedding_size, name='embeddings'))
 

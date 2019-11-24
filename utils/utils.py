@@ -8,7 +8,8 @@ import keras
 
 from PIL import Image
 
-from utils.constants import WIKI_18_58_160, WIKI_18_58_224
+from utils.constants import WIKI_18_58_160, WIKI_18_58_224, WIKI_ALIGNED_UNI_160, \
+    WIKI_AUGMENTED_UNI_160
 from utils.data.data_generators import AgeDG, AgeIntervalDG, EigenvaluesDG
 
 
@@ -133,7 +134,7 @@ def get_args():
         '--dataset-path',
         type=str,
         # required=True,
-        default=WIKI_18_58_160,
+        default=WIKI_ALIGNED_UNI_160,
         help='path to the dataset, '
              'default=utils.constants.WIKI_ALIGNED_MTCNN_PATH_ABS')
 
@@ -342,8 +343,6 @@ def get_parameters_details(args, set_size, tra_sz, val_sz, tes_sz):
 def print_parameters(args, set_size, tra_sz, val_sz, tes_sz):
     """Prints the details of a training session."""
 
-    print(ge)
-
     print('Criterion:\t\t{}'.format(args.criterion))
     print('Triplet strategy:\t{}'.format(args.triplet_strategy))
     print('CNN:\t\t\t{}'.format(args.embeddings_cnn))
@@ -387,7 +386,7 @@ def get_in_out_labels(args):
     :return: in_labels, in_sz, out_labels, out_sz
     """
     if args.age_interval == 1:
-        in_labels = from_pickle("{}..\\in\\age_intervals.pickle"
+        in_labels = from_pickle("{}in\\age_intervals.pickle"
                                 .format(args.dataset_path))
 
         in_keys = list(in_labels.keys())
@@ -395,7 +394,7 @@ def get_in_out_labels(args):
         # contain the sames size, due to the uniform distribution
         in_sz = len(in_keys) * len(in_labels[in_keys[0]])
 
-        out_labels = from_pickle("{}..\\out\\ages_relaxed.pickle"
+        out_labels = from_pickle("{}out\\ages_relaxed.pickle"
                                  .format(args.dataset_path))
 
         # out_labels is a list, not a dict

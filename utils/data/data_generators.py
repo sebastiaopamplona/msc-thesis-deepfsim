@@ -1,15 +1,20 @@
 import keras
 import numpy as np
+import imgaug as ia
 
 from PIL import Image
 from numpy import asarray
 from random import shuffle
+from imgaug import augmenters as iaa
 
 from utils.constants import WIKI_ALIGNED_MTCNN_UNI_RELAXED_160_ABS
 
+
+
+
 def get_standardized_pixels(filename):
     """
-    Standardizes image pixels; Facenet expects standardized pixels as input.
+    Reads an image and standardizes its pixels; Facenet expects standardized pixels as input.
 
     :param filename: filepath to the image
 
@@ -22,6 +27,33 @@ def get_standardized_pixels(filename):
     mean, std = pixels.mean(), pixels.std()
     return (pixels - mean) / std
 
+
+def get_pixels(filename):
+    """
+    Reads an image and returns its pixels.
+
+    :param filename: filepath to the image
+
+    :return: image pixels
+    """
+    image = Image.open(filename)
+    image = image.convert('RGB')
+    pixels = asarray(image)
+    # ia.imshow(pixels)
+    return pixels
+
+
+def standardize_pixels(pixels):
+    """
+    Standardizes pixels; Facenet expects standardized pixels as input.
+
+    :param pixels: image pixels
+
+    :return: standardized pixels
+    """
+    pixels = pixels.astype('float32')
+    mean, std = pixels.mean(), pixels.std()
+    return (pixels - mean) / std
 
 class AgeDG(keras.utils.Sequence):
     def __init__(self, dataset_path, ages, set_size,
@@ -121,9 +153,10 @@ class AgeIntervalDG(keras.utils.Sequence):
             else:
                 shuffle(self.idxs)
 
-
-
-        batch_x, batch_y = self.__data_generation()
+        if "augmented" in self.dataset_path:
+            batch_x, batch_y = self.__data_generation()
+        else:
+            batch_x, batch_y = self.__data_generation_augmented()
         self.step += 1
 
         return batch_x, batch_y
@@ -144,7 +177,7 @@ class AgeIntervalDG(keras.utils.Sequence):
             for i in range(self.num_i):
                 for p in range(per_interval):
                     idx = self.idx_map[i][self.step * per_interval + p]
-                    filename = '{}..\\in\\{}.png'.format(self.dataset_path, idx)
+                    filename = '{}in\\{}.png'.format(self.dataset_path, idx)
                     pixels = get_standardized_pixels(filename)
                     batch_x[in_batch_idx] = pixels
                     batch_y[in_batch_idx] = i
@@ -152,11 +185,59 @@ class AgeIntervalDG(keras.utils.Sequence):
         else:
             for i in range(start, end):
                 idx = self.idxs[i]
-                filename = '{}..\\out\\{}.png'.format(self.dataset_path, idx)
+                filename = '{}out\\{}.png'.format(self.dataset_path, idx)
                 pixels = get_standardized_pixels(filename)
                 batch_x[in_batch_idx] = pixels
                 batch_y[in_batch_idx] = self.age_intervals[idx]
                 in_batch_idx += 1
+
+        # to match (from model.fit()): x=[x_train, y_train], y=dummy_train
+        return [batch_x, batch_y], np.ones((self.batch_size, self.embedding_size + 1))
+
+    def __data_generation_augmented(self):
+        """Generates data containing batch_size samples"""
+
+        seq = iaa.Sequential([
+            iaa.Affine(rotate=(-20, 20)),
+            iaa.AdditiveGaussianNoise(scale=(10, 30)),
+            iaa.Fliplr(p=0.5)
+        ])
+
+        start = self.step * self.batch_size
+        end = min((self.step + 1) * self.batch_size, self.set_size)
+        batch_x = np.zeros((end - start,
+                            self.img_dimension[0],
+                            self.img_dimension[1],
+                            self.img_dimension[2]))
+        batch_y = np.zeros(end - start)
+        in_batch_idx = 0
+        if self.uni:
+            per_interval = int(self.batch_size / self.num_i)
+            for i in range(self.num_i):
+                for p in range(per_interval):
+                    idx = self.idx_map[i][self.step * per_interval + p]
+                    filename = '{}in\\{}.png'.format(self.dataset_path, idx)
+                    # pixels = get_standardized_pixels(filename)
+                    batch_x[in_batch_idx] = get_pixels(filename)
+                    batch_y[in_batch_idx] = i
+                    in_batch_idx += 1
+        else:
+            for i in range(start, end):
+                idx = self.idxs[i]
+                filename = '{}out\\{}.png'.format(self.dataset_path, idx)
+                # pixels = get_standardized_pixels(filename)
+                batch_x[in_batch_idx] = get_pixels(filename)
+                batch_y[in_batch_idx] = self.age_intervals[idx]
+                in_batch_idx += 1
+
+        # data augmentation
+        batch_x = seq.augment_images(batch_x.astype('uint8'))
+        batch_x = batch_x.astype('float32')
+
+        # standardization
+        for i in range(len(batch_x)):
+            batch_x[i] = standardize_pixels(batch_x[i])
+
 
         # to match (from model.fit()): x=[x_train, y_train], y=dummy_train
         return [batch_x, batch_y], np.ones((self.batch_size, self.embedding_size + 1))
