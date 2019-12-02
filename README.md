@@ -4,6 +4,14 @@ Uma forma de resolver o problema será teres mais dados. Isso podes conseguir co
 - experimentei treinar num dataset com data augmentation offline (augmentation antes de treinar) e online (augmentation durante o treino); queria comparar as duas, porque supostamente em online criam-se mais dados, por causa das probabilidades de cada "augmentation"
 - em offline, alterei a orientação de -20° a 20° e adicionei ruído (com os métodos Affine(rotate=(-20, 20)) e AdditiveGaussianNoise(scale=(10, 30)))
 - **Offline:**
+Detalhes do treino:
+- Critério: intervalo de idades
+- Conjunto de treino: 59400
+- Conjunto de validação: 3564
+- Dimensão do embedding: 128
+- Rede: Facenet
+- Número de épocas: 150
+- Batch size: 66
     - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False): 
     ![](https://i.ibb.co/yqMXywM/adam.png)
     - RMSprop(learning_rate=1e-4, rho=0.9)
@@ -12,6 +20,14 @@ Uma forma de resolver o problema será teres mais dados. Isso podes conseguir co
     ![](https://i.ibb.co/L0WGrxL/sgd.png)
 - em online, para além da alteração da orientação e do ruído, invertei horizontalmente com probabilidade de 0.5
 - **Online:**
+Detalhes do treino:
+- Critério: intervalo de idades
+- Conjunto de treino: 19404
+- Conjunto de validação: 1584
+- Dimensão do embedding: 128
+- Rede: Facenet
+- Número de épocas: 150
+- Batch size: 66
     - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False): 
     ![](https://i.ibb.co/MDr63S4/adam.png)
     - RMSprop(learning_rate=1e-4, rho=0.9)
@@ -42,14 +58,13 @@ Dropout não deve dar problemas mas batch normalization é capaz de vos afectar 
 Treinei o modelo com os três optimizers diferentes, durante 150 épocas:
 
 Detalhes do treino:
-  - Critério: intervalo de idades
-  - Conjunto de treino: 19404
-  - Conjunto de validação: 1584
-  - Dimensão do embedding: 128
-  - Rede: Facenet
-  - Número de épocas: 150
-  - Batch size: 66
-
+- Critério: intervalo de idades
+- Conjunto de treino: 19404
+- Conjunto de validação: 1584
+- Dimensão do embedding: 128
+- Rede: Facenet
+- Número de épocas: 150
+- Batch size: 66
   - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False)
   ![](https://i.ibb.co/2th9mCV/adam.png)
   
