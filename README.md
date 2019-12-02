@@ -10,7 +10,7 @@ Uma forma de resolver o problema será teres mais dados. Isso podes conseguir co
     ![](https://i.ibb.co/p1M3NqS/rmsprop.png)
     - SGD(learning_rate=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
     ![](https://i.ibb.co/L0WGrxL/sgd.png)
-- em online, para além da alteração da orientação e do rúido, invertei horizontalmente com probabilidade de 0.5
+- em online, para além da alteração da orientação e do ruído, invertei horizontalmente com probabilidade de 0.5
 - **Online:**
     - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False): 
     ![](https://i.ibb.co/MDr63S4/adam.png)
