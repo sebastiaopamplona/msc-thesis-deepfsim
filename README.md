@@ -53,10 +53,10 @@ Detalhes do treino:
   - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False)
   ![](https://i.ibb.co/2th9mCV/adam.png)
   
-  - SGD(learning_rate=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+  - RMSprop(learning_rate=1e-4, rho=0.9)
   ![](https://i.ibb.co/28hn0jw/rmsdrop.png)
   
-  - RMSprop(learning_rate=1e-4, rho=0.9)
+  - SGD(learning_rate=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
   ![](https://i.ibb.co/28bCrv3/sgd.png)
   
 Uma forma de resolver o problema será teres mais dados. Isso podes conseguir com data augmentation (que não parece ser o que estás a fazer, apesar de teres uma secção com esse nome no readme)
