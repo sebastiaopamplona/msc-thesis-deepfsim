@@ -1,4 +1,24 @@
 # 2ª Iteração
+Treinei o modelo com os três optimizers diferentes, durante 150 épocas:
+
+Detalhes do treino:
+  - Critério: intervalo de idades
+  - Conjunto de treino: 19404
+  - Conjunto de validação: 1584
+  - Dimensão do embedding: 128
+  - Rede: Facenet
+  - Número de épocas: 150
+  - Batch size: 66
+
+  - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False)
+  ![](https://gm1.ggpht.com/9yjlcfsuwiyEEaNGko8XRHmGcM2Ziqi_m8Np9txzTN9iGhAU_0JvQaVPEdQfNJV-487q0WEoYY0VC1jDdofeQHlXVqb6ZM9dv7G8EvWaiK2Us4UyvMVM2pfMIJGhcGFuY_5gznOfHJxuZZ24jJk33BDYg2F-1jXMDwlzje7QTl2Z9xS6GFrGGnlpqT59h2SYhasa-wvsD6XH74nbVLA-pYI_LBEIvXw7XhlECc6GDg5z3rWhJJJ1NahNPPX-KhMapSzjtNRZeA0YjnqgTZro_EY--q8y44Xfpl4SJ6Bh5baq5mTlmgDEZc9REUgYv_n0d8sPfVYXUgMrCml_ihah9qaThUhLyoGa7DpGw2VqBUcnfJRvJlFlXtObsIAWu6WpMOPweanb8uJ-61mdNkGwn96ITiEByUP_n6uKgUC1q18I3WOOS2ukm1RHb2jPOodUm1OjOYFTyLy6YrAp5UhCwbGaKIeMSDx9fgUjA0HF3vIgzV4Gx80LVzHuicsM8VPVyUhDsx-aDxTAtCZi-KpLNJbooj5305MVcr08g0VEf1LswI64Ny_J2-WJub8wxwvIwe0dsPexHeZejpjDAR8hDS3_no0zX294WdEtcGvUNwtIcCaxovssnOl0pd8WH9o6jOQcLt-94CU8SggNEaciYedvlCKTWYlWDX057etV0vYO-OJWxfWKWWKc0-BkZMF8D3FK_wNOTVAzTRZqrBF_Qc4-6-QcpstDclsz3N5FLMRthmBbx7dsb4pUpbY05iU=s0-l75-ft-l75-ft)
+  
+  - SGD(learning_rate=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+  ![](https://gm1.ggpht.com/eThYqLnpf_HPFLorqBJzqGq7o3AmdLmSnINeXIC589YO5UczhjY_x26tRrqTXnxrH3u72zsK4VqAz6qCitMpOnwHlbMB3hOuZ4khiqNs0Rce0ql_1P1wIff487aIHF_0HO342SCctCaUL477-Uy4cLi1XO2SIHwA8hmqPVW03Wqvxwq578GOek9Pt1jW63B9ZtRzY_GktFqg-pRNc2JQERU4lIB56Ine7DnoAelF2bgHKz0nE0rqeg-b6BEq6v_3oq802XSZWjwZSK4GwUrn9YH4w4eQxRLlwZF9y-JhYRh68z_MJxFUhABK7j5W5Xzn9bohJn7HittE8XSF_q_NMnW0wNFYrZDYWS4XWzcb8OdwfBUsow9YI0ypt-jaaZKdkTmyThMLkSOdGg7wgDD02fH-LYZSQJX0KMbmay6y__X5Z7ClQZmkBs_EYwayr1Pm06Ld4ZmOnrGcotH6Z55ZXCZoUiW5A4gUzCMN8Yfud8vPilpXC0NnXaPtMSfGENIOolmy0uechzcWSSJhILHlY6nkpnYFNXoZWJ_jvdg47LL8KqkY_jLI855Mv_qwTecLa3e2-h_UfE2RHxmrihMQTXrq1poB_67sSF9zTbyVpKJq2OEOwmJZKTXCg-xW5wZfCREVGrNIzuGI2F8CmNKFm8C5s_gkg74BRm_YaT3M8kjh98MXSiRBRJH_FQL0h-SmfjZqiRREswkA2wx3BuUc5KfbgvFauzdSC9Ei3pxQA36zkGxox8SqzlxDdK0dc0_O=s0-l75-ft-l75-ft)
+  
+  - RMSprop(learning_rate=1e-4, rho=0.9)
+  ![](https://gm1.ggpht.com/51mcHafvii22UswkZc_eeFNbixfFpZtB9nW1p4rZ_wGU2v5TXL8LJUgQYwvMNAeHeZ4Fmwq5kpeUTjUMT4G3pacpFV1XzNEfTCAhGgkzjCmGuKTIna9awqqtWlprF2rO7pFndGMZh8-oMyK6T_FVbEr9jApQfV7TTJmF63f5nsMgIcHxcbvnQUaNA7YX3ed-fA8MIxpgpMhlvV9WhbVKPRF4sJCSmxHDbWgnIXveVwupGrlf3aCYFnNujff6XQMPgUoz9udERwA-S2IwfwjTzuXjusg2kKKhWFTwK-22VqIR8yNAghW-og3uT4eTDYA5y813025xUr_KNz5tKfG4lZIz3uAyysFaORWODUT2B1PKm6yoEs8ggN2MQPp3-1KoBWatjN9H6rUDeFJydu_aF7YqMS8nlSdR-ogVMViRpIkgFzwyoA5weCgm0urTq8gmVvyWnVchoOOVljvV6Qo9VhYb7Ft-m3y24--P8DsidMFBh5r-k-xN_7oPsxHtWomeyjqrbGkTQoX8s1wfIcP9nwl4UxsBFMpBM3r-zjBBvY7cnxyHtT03XRabmO2Kn2PV2uIHtYiDGrp9Drt9k-zQYenkv_XltB8IhitlJhS1pvuF4JHr1lnc-iMnlv8d0w4DUetz6VZIi1PkL2ZvKkEz95VQRvvMF3yP5YiJW1dxX9Jfd2SisFPIkO2GUMt6wn5zx71z2ssYV51wOERmhx7fnuTREA8AosNcaQ_O4Nby79OzFKAU6FnuZf6vjb3UtnU=s0-l75-ft-l75-ft)
+  
 Uma forma de resolver o problema será teres mais dados. Isso podes conseguir com data augmentation (que não parece ser o que estás a fazer, apesar de teres uma secção com esse nome no readme)
   - interpretei mal o conceito de *data augmentation*; vou experimentar nos próximos testes
 
