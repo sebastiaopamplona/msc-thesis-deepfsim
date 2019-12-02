@@ -1,3 +1,43 @@
+# 3ª Iteração
+Uma forma de resolver o problema será teres mais dados. Isso podes conseguir com data augmentation:
+- utilizei a library [imgaug](https://github.com/aleju/imgaug) (utilizada no paper sobre data augmentation, que o professor me indicou)
+- experimentei treinar num dataset com data augmentation offline (augmentation antes de treinar) e online (augmentation durante o treino); queria comparar as duas, porque supostamente em online criam-se mais dados, por causa das probabilidades de cada "augmentation"
+- em offline, alterei a orientação de -20° a 20° e adicionei ruído (com os métodos Affine(rotate=(-20, 20)) e AdditiveGaussianNoise(scale=(10, 30)))
+- **Offline:**
+    - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False): 
+    ![](https://i.ibb.co/yqMXywM/adam.png)
+    - RMSprop(learning_rate=1e-4, rho=0.9)
+    ![](https://i.ibb.co/p1M3NqS/rmsprop.png)
+    - SGD(learning_rate=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+    ![](https://i.ibb.co/L0WGrxL/sgd.png)
+- em online, para além da alteração da orientação e do rúido, invertei horizontalmente com probabilidade de 0.5
+- **Online:**
+    - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False): 
+    ![](https://i.ibb.co/MDr63S4/adam.png)
+    - RMSprop(learning_rate=1e-4, rho=0.9)
+    ![](https://i.ibb.co/FB0CrfH/rmsprop.png)
+    - SGD(learning_rate=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+    ![](https://i.ibb.co/gwMZHcS/sgd.png)
+
+Outra forma é por regularização. Podes experimentar regularização L1 ou L2, por exemplo, que já vem no Keras:
+- como ainda estou a utilizar arquiteturas já definidas, ainda não experimentei acrescentar camadas de regularização L1 ou L2, pois achei melhor não alterar as topologias; quando passar para a rede mais pequena, acrescento e testo
+
+O que sugeria é que usasses os pesos originais da VGG16, sem modificação, pelo menos das camadas convolucionais. Depois treinasses apenas as camadas densas a seguir, que poderias dimensionar mais livremente para tentar reduzir o overfitting:
+- **Sem data augmentation:**
+    - Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, amsgrad=False): 
+    ![](https://i.ibb.co/4sbGbrp/adam.png)
+    - RMSprop(learning_rate=1e-4, rho=0.9)
+    ![](https://i.ibb.co/DRPzdsJ/rmsprop.png)
+    - SGD(learning_rate=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
+    ![](https://i.ibb.co/jzRz6YZ/sgd.png)
+- **Com data augmentation (Offline):**
+    - *TODO*
+- **Com data augmentation (Online):**
+    - *TODO*
+
+Dropout não deve dar problemas mas batch normalization é capaz de vos afectar as medidas de distância porque vai fazer o output de cada exemplo variar conforme os outros exemplos no lote:
+- ainda não usei outras redes para além da VGG16 (não tem batch normalization) e da Facenet (tem batch normalization); depois de correr os testes da VGG16, com data augmentation, passo para uma nova rede sem batch normalization
+
 # 2ª Iteração
 Treinei o modelo com os três optimizers diferentes, durante 150 épocas:
 
