@@ -7,7 +7,48 @@ from mtcnn.mtcnn import MTCNN
 import tensorflow_datasets as tfds
 from utils.constants import WIKI_ALIGNED_MTCNN_160_ABS, DESKTOP_PATH_ABS
 
+from keras.preprocessing.image import ImageDataGenerator
+from keras.layers.pooling import AveragePooling2D
+from keras.applications import VGG16
+from keras.layers.core import Dropout
+from keras.layers.core import Flatten
+from keras.layers.core import Dense
+from keras.layers import Input
+from keras.models import Model
+from keras.optimizers import Adam
+from keras.utils import np_utils
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from imutils import paths
+import matplotlib.pyplot as plt
+import argparse
+import cv2
+import os
+
+from matplotlib import pyplot
+from PIL import Image
+from numpy import asarray
+from scipy.spatial.distance import cosine
+from mtcnn.mtcnn import MTCNN
+from keras_vggface.vggface import VGGFace
+from keras_vggface.utils import preprocess_input
+
+import tensorflow as tf
+from keras import Sequential
+import keras
+import keras_vggface
+from keras.models import Model
+from keras.layers import Input, Flatten, Dense, Dropout, concatenate, Conv2D, MaxPooling2D, Lambda
+from keras.utils import plot_model
+from keras.models import load_model
+
+from utils.constants import FACENET_MODEL_ABS, FACENET_WEIGHTS_ABS
+from utils.models.facenet import InceptionResNetV1
+
+
 ages = pickle.load(open('{}ages.pickle'.format(WIKI_ALIGNED_MTCNN_160_ABS), 'rb'))
+
 
 def ask_for_age():
     while True:
@@ -29,40 +70,38 @@ def test_threshold(threshold):
                 break
 
 
-def extract_face(filename, required_size=(160, 160)):
-    # load image from file
-    image = Image.open(filename)
-    # convert to RGB, if needed
-    image = image.convert('RGB')
-    # convert to array
-    pixels = asarray(image)
-    # create the detector, using default weights
-    detector = MTCNN()
-    # detect faces in the image
-    results = detector.detect_faces(pixels)
-    # extract the bounding box from the first face
-    x1, y1, width, height = results[0]['box']
-    # bug fix
-    x1, y1 = abs(x1), abs(y1)
-    x2, y2 = x1 + width, y1 + height
-    # extract the face
-    face = pixels[y1:y2, x1:x2]
-    # resize pixels to the model size
-    image = Image.fromarray(face)
-    image = image.resize(required_size)
-    face_array = asarray(image)
-    return face_array
+def resize_face(face, dim=(56, 56)):
+    img = cv2.imread(face)
+    return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+
+
+def get_embeddings(filenames):
+    # extract faces
+    faces = [resize_face(f) for f in filenames]
+    # convert into an array of samples
+    samples = asarray(faces, 'float32')
+    # prepare the face for the model, e.g. center pixels
+    samples = preprocess_input(samples, version=2)
+    # create a vggface model
+    vgg16_model = keras.applications.vgg16.VGG16(input_tensor=Input(shape=(56, 56, 3)))
+    vgg16_model.layers.pop()
+    model = Sequential()
+    for layer in vgg16_model.layers:
+        model.add(layer)
+
+    for i in range(len(model.layers) - 2):
+        # print(type(model.layers[i]))
+        model.layers[i].trainable = False
+
+    model.add(Dense(64, name='embeddings'))
+    model.summary()
+    # perform prediction
+    yhat = model.predict(samples)
+    return yhat
 
 
 if __name__ == "__main__":
-    eigen_d = pickle.load(open(
-        "C:/Users/Sebastião Pamplona/Desktop/DEV/datasets/treated/age/wiki_aligned_mtcnn_uni_relaxed_224/18_58_copy/eigenvalues.pickle",
-        'rb'))
-    eigen_d_keys = list(eigen_d.keys())
-    eigen_l = []
-    for k in eigen_d_keys:
-        eigen_l.append(eigen_d[k])
 
-    eigen_l = np.array(eigen_l)
-    for i in range(100):
-        print("{} - {}".format(min(eigen_l[i]), max(eigen_l[i])))
+    f1 = "100000.jpg"
+    filenames = [f1]
+    embeddings = get_embeddings(filenames)

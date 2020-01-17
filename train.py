@@ -109,6 +109,16 @@ if __name__ == '__main__':
         # Save the weights
         model.save_weights(model_path + model_name)
 
+        # Increase the distance threshold for the eigenvectors triplet formation
+        if args.criterion == "eigenvectors":
+            fr = open("eigenvectors_threshold.txt", "r")
+            counter = fr.read()
+            fr.close()
+            fw = open("eigenvectors_threshold.txt", "w")
+            fw.write(str(int(counter) + 1))
+            fr.close()
+
+
     # Load weights from the trained model and produce embeddings for the test set
     else:
         print("Predicting with the weights from: {} ...".format(model_path + model_name))

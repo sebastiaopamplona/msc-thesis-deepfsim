@@ -13,10 +13,21 @@ def relaxed_age_triplet_selection(labels):
                                                 1 + threshold))
 
 
-def eigenvalues_triplet_selection(labels):
+def eigenvectors_triplet_selection(labels):
     # Mean euclidean distance for eigenvalues of
     # wiki_aligned_mtcnn_uni_relaxed_160/18_58_copy: 2237.6484028731343
-    threshold = 2237
+
+    # (mean,                std,                min, max)
+    # (4.037984982685243,   0.6682912235306261, 0.0, 9.676286320253318)
+    # euclidean: 185617 ms
+
+    thresholds = {"0": 0.3, "1": 0.5, "2": 0.8, "3": 1.0, "4": 1.3}
+    fr = open("eigenvectors_threshold.txt", "r")
+    counter = fr.read()
+    fr.close()
+    threshold = thresholds[counter]
+    print("eigenvectos similarity threshold: {}".format(threshold))
+
     return tf.math.less_equal(pairwise_distance(labels), threshold)
 
 
@@ -77,13 +88,13 @@ def adapted_semihard_triplet_loss(y_true, y_pred):
     # Build pairwise binary adjacency matrix.
 
     # EQUAL
-    adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+    # adjacency = math_ops.equal(labels, array_ops.transpose(labels))
 
     # AGE RELAXED
     # adjacency = relaxed_age_triplet_selection(labels)
 
-    # EIGENVALUES
-    # adjacency = eigenvalues_triplet_selection(labels)
+    # EIGENVECTORS
+    adjacency = eigenvectors_triplet_selection(labels)
 
     # Invert so we can select negatives only.
     adjacency_not = math_ops.logical_not(adjacency)

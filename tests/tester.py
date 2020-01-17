@@ -6,8 +6,8 @@ import numpy as np
 
 from utils.constants import WIKI_ALIGNED_MTCNN_UNI_RELAXED_160_ABS, \
     IMDB_ALIGNED_MTCNN_160_ABS, WIKI_18_58_160, \
-    WIKI_18_58_224, WIKI_ALIGNED_UNI_160, WIKI_AUGMENTED_UNI_160
-from utils.data.data_generators import AgeDG, AgeRelaxedIntervalDG, EigenvaluesDG, AgeIntervalDG
+    WIKI_18_58_224, WIKI_ALIGNED_UNI_160, WIKI_AUGMENTED_UNI_160, IMDB_ALIGNED
+from utils.data.data_generators import AgeDG, EigenvectorsDG, AgeIntervalDG
 from utils.utils import get_tra_val_tes_size, from_pickle, to_pickle
 
 
@@ -129,53 +129,51 @@ def testIMDBAgeDG():
            uni_tra=0)
 
 
-def testWIKIAgeRelaxedIntervalDG():
-    data_generator_params = {'batch_size': 66,
-                             'dim': (160, 160, 3),
-                             'embedding_size': 128}
-
-    tra_relaxed_ages = pickle.load(open("{}in\\relaxed_ages.pickle".format(WIKI_ALIGNED_MTCNN_UNI_RELAXED_160_ABS), 'rb'))
-    tes_relaxed_ages = pickle.load(open("{}out\\relaxed_ages.pickle".format(WIKI_ALIGNED_MTCNN_UNI_RELAXED_160_ABS), 'rb'))
-    tra_size = len(tra_relaxed_ages)
-    tes_size = len(tes_relaxed_ages)
-
-    train_generator = AgeRelaxedIntervalDG(relaxed_ages=tra_relaxed_ages,
-                                           set_size=tra_size,
-                                           training_flag=1,
-                                           **data_generator_params)
-
-    test_generator = AgeRelaxedIntervalDG(relaxed_ages=tes_relaxed_ages,
-                                          set_size=tes_size,
-                                          training_flag=0,
-                                          **data_generator_params)
-
-    print('Training WIKI_Uni_Relaxed_DataGenerator')
-    testDG(train_generator, tra_size, 66, uni_tra=1)
-
-    print('Testing WIKI_Uni_Relaxed_DataGenerator')
-    testDG(test_generator, tes_size, 66, uni_tra=0)
+# def testWIKIAgeRelaxedIntervalDG():
+#     data_generator_params = {'batch_size': 66,
+#                              'dim': (160, 160, 3),
+#                              'embedding_size': 128}
+#
+#     tra_relaxed_ages = pickle.load(open("{}in\\relaxed_ages.pickle".format(WIKI_ALIGNED_MTCNN_UNI_RELAXED_160_ABS), 'rb'))
+#     tes_relaxed_ages = pickle.load(open("{}out\\relaxed_ages.pickle".format(WIKI_ALIGNED_MTCNN_UNI_RELAXED_160_ABS), 'rb'))
+#     tra_size = len(tra_relaxed_ages)
+#     tes_size = len(tes_relaxed_ages)
+#
+#     train_generator = AgeRelaxedIntervalDG(relaxed_ages=tra_relaxed_ages,
+#                                            set_size=tra_size,
+#                                            training_flag=1,
+#                                            **data_generator_params)
+#
+#     test_generator = AgeRelaxedIntervalDG(relaxed_ages=tes_relaxed_ages,
+#                                           set_size=tes_size,
+#                                           training_flag=0,
+#                                           **data_generator_params)
+#
+#     print('Training WIKI_Uni_Relaxed_DataGenerator')
+#     testDG(train_generator, tra_size, 66, uni_tra=1)
+#
+#     print('Testing WIKI_Uni_Relaxed_DataGenerator')
+#     testDG(test_generator, tes_size, 66, uni_tra=0)
 
 
 if __name__ == "__main__":
     # testWIKIAgeDG()
     data_generator_params = {'batch_size': 66,
                              'embedding_size': 128,
-                             'dataset_path': WIKI_AUGMENTED_UNI_160,
-                             'img_format': ".png",
+                             'dataset_path': "{}first_100k\\".format(IMDB_ALIGNED),
+                             'img_format': ".jpg",
                              'img_dimension': (160, 160, 3)}
 
 
+    eigenvectors = from_pickle("{}0_39999_eigenvectors_normalized.pickle".format(data_generator_params["dataset_path"]))
+    print(len(eigenvectors))
+    dge = EigenvectorsDG(eigenvectors=eigenvectors,
+                         set_size=len(eigenvectors),
+                         **data_generator_params)
+    testDG(dge, len(eigenvectors), batch_size=data_generator_params["batch_size"], uni_tra=0)
+    testDG(dge, len(eigenvectors), batch_size=data_generator_params["batch_size"], uni_tra=0)
 
-
-    # eigenvalues = from_pickle("{}eigenvalues.pickle".format(data_generator_params["dataset_path"]))
-    # print(len(eigenvalues))
-    # dge = EigenvaluesDG(eigenvalues=eigenvalues,
-    #                     set_size=len(eigenvalues),
-    #                     **data_generator_params)
-    # testDG(dge, len(eigenvalues), batch_size=data_generator_params["batch_size"], uni_tra=0)
-    # testDG(dge, len(eigenvalues), batch_size=data_generator_params["batch_size"], uni_tra=0)
-    #
-    # print("EigenvaluesDG OK.")
+    print("EigenvaluesDG OK.")
 
 
 
@@ -192,39 +190,39 @@ if __name__ == "__main__":
 
 
 
-    ages = from_pickle("{}out\\ages.pickle".format(data_generator_params["dataset_path"]))
-    ages_relaxed = from_pickle("{}out\\ages_relaxed.pickle".format(data_generator_params["dataset_path"]))
-    d = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []}
-    for i in range(len(ages_relaxed)):
-        d[ages_relaxed[i]].append(i)
-
-    for i in range(len(ages_relaxed)):
-        assert i in d[ages_relaxed[i]]
-
-    to_pickle(obj=d, filepath="{}out\\age_intervals.pickle".format(data_generator_params["dataset_path"]))
-
-    age_intervals_in = from_pickle("{}in\\age_intervals.pickle".format(data_generator_params["dataset_path"]))
-    in_sz = len(age_intervals_in) * len(age_intervals_in[0])
-    dgai = AgeIntervalDG(age_intervals=age_intervals_in,
-                         num_i=6,
-                         uni=1,
-                         set_size=in_sz,
-                         **data_generator_params)
-    testDG(dgai, in_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
-    testDG(dgai, in_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
-
-    print("(in) AgeIntervalDG OK.")
-
-    age_intervals_out = from_pickle("{}out\\ages_relaxed.pickle".format(data_generator_params["dataset_path"]))
-    out_sz = len(age_intervals_out)
-    # for i in range(6):
-    #     out_sz += len(age_intervals_out[i])
-    dgao = AgeIntervalDG(age_intervals=age_intervals_out,
-                         num_i=6,
-                         uni=0,
-                         set_size=out_sz,
-                         **data_generator_params)
-    testDG(dgao, out_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
-    testDG(dgao, out_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
-
-    print("(out) AgeIntervalDG OK.")
+    # ages = from_pickle("{}out\\ages.pickle".format(data_generator_params["dataset_path"]))
+    # ages_relaxed = from_pickle("{}out\\ages_relaxed.pickle".format(data_generator_params["dataset_path"]))
+    # d = {0: [], 1: [], 2: [], 3: [], 4: [], 5: []}
+    # for i in range(len(ages_relaxed)):
+    #     d[ages_relaxed[i]].append(i)
+    #
+    # for i in range(len(ages_relaxed)):
+    #     assert i in d[ages_relaxed[i]]
+    #
+    # to_pickle(obj=d, filepath="{}out\\age_intervals.pickle".format(data_generator_params["dataset_path"]))
+    #
+    # age_intervals_in = from_pickle("{}in\\age_intervals.pickle".format(data_generator_params["dataset_path"]))
+    # in_sz = len(age_intervals_in) * len(age_intervals_in[0])
+    # dgai = AgeIntervalDG(age_intervals=age_intervals_in,
+    #                      num_i=6,
+    #                      uni=1,
+    #                      set_size=in_sz,
+    #                      **data_generator_params)
+    # testDG(dgai, in_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
+    # testDG(dgai, in_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
+    #
+    # print("(in) AgeIntervalDG OK.")
+    #
+    # age_intervals_out = from_pickle("{}out\\ages_relaxed.pickle".format(data_generator_params["dataset_path"]))
+    # out_sz = len(age_intervals_out)
+    # # for i in range(6):
+    # #     out_sz += len(age_intervals_out[i])
+    # dgao = AgeIntervalDG(age_intervals=age_intervals_out,
+    #                      num_i=6,
+    #                      uni=0,
+    #                      set_size=out_sz,
+    #                      **data_generator_params)
+    # testDG(dgao, out_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
+    # testDG(dgao, out_sz, batch_size=data_generator_params["batch_size"], uni_tra=0)
+    #
+    # print("(out) AgeIntervalDG OK.")

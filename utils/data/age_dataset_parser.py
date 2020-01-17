@@ -666,25 +666,6 @@ def test_renamed_imdb():
 
 if __name__ == '__main__':
     rename_imdb()
-    # print(num_age("10786_31.jpg"))
-    # test_imdb_160_and_ages_multi_CPU()
-
-    # dirs = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"]
-    # for d in range(10, 100):
-    #     dirs.append(str(d))
-    #
-    #
-    # dic = {}
-    # ctr = 0
-    # for d in dirs:
-    #     files = os.listdir("{}{}".format(IMDB_ALIGNED_MTCNN_160_ABS, d))
-    #     dic[ctr] = len(files)
-    #     ctr += 1
-    #
-    # print(dic)
-
-    # ages_dict = from_pickle("{}00\\00_ages_dict.pickle".format(IMDB_ALIGNED_MTCNN_160_ABS))
-    # print(ages_dict)
 
 
 

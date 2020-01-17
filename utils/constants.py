@@ -12,6 +12,7 @@ WIKI_AUGMENTED_UNI_160 = DATASETS + "treated\\age\\wiki_augmented_uni_160\\"
 WIKI_CROP_PATH_ABS = DATASETS + "raw\\wiki_crop\\"
 
 IMDB_CROP_PATH_ABS = DATASETS + "raw\\imdb_crop\\"
+IMDB_ALIGNED = DATASETS + "treated\\age\\imdb_aligned\\"
 IMDB_ALIGNED_MTCNN_160_ABS = DATASETS + "treated\\age\\imdb_aligned_mtcnn_160\\"
 
 MTCNN_EXTRACTED_PATH_ABS = DATASETS + "mtcnn_extracted\\"

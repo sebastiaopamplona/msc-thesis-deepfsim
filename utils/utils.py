@@ -9,8 +9,8 @@ import keras
 from PIL import Image
 
 from utils.constants import WIKI_18_58_160, WIKI_18_58_224, WIKI_ALIGNED_UNI_160, \
-    WIKI_AUGMENTED_UNI_160
-from utils.data.data_generators import AgeDG, AgeIntervalDG, EigenvaluesDG
+    WIKI_AUGMENTED_UNI_160, IMDB_ALIGNED
+from utils.data.data_generators import AgeDG, AgeIntervalDG, EigenvectorsDG
 
 
 def get_tra_val_tes_size(set_size, split_train_val, split_train_test):
@@ -134,7 +134,7 @@ def get_args():
         '--dataset-path',
         type=str,
         # required=True,
-        default=WIKI_ALIGNED_UNI_160,
+        default="{}first_100k\\".format(IMDB_ALIGNED),
         help='path to the dataset, '
              'default=utils.constants.WIKI_ALIGNED_MTCNN_PATH_ABS')
 
@@ -142,7 +142,7 @@ def get_args():
     parser.add_argument(
         '--dataset',
         type=str,
-        default="wiki",
+        default="imdb",
         help='name of the dataset, '
              'default=wiki')
 
@@ -158,7 +158,7 @@ def get_args():
     parser.add_argument(
         '--num-epochs',
         type=int,
-        default=150,
+        default=1,
         help='number of times to train on the data, '
              'default=20')
 
@@ -201,7 +201,7 @@ def get_args():
     parser.add_argument(
         '--age-interval',
         type=int,
-        default=1,
+        default=0,
         help='flag (0: none | 1: relaxed | 2: 5in5 | 3: 10in10) indicating if '
              'the training is being done on a age dataset divided into age '
              'intervals, '
@@ -211,7 +211,7 @@ def get_args():
     parser.add_argument(
         '--uniformized',
         type=int,
-        default=1,
+        default=0,
         help='flag (0/1) indicating if the training is being done on uniformed '
              'distributed data, '
              'default=1')
@@ -261,7 +261,7 @@ def get_args():
     parser.add_argument(
         '--image-format',
         type=str,
-        default=".png",
+        default=".jpg",
         help='image format, '
              'defualt=.png')
 
@@ -277,16 +277,16 @@ def get_args():
     parser.add_argument(
         '--criterion',
         type=str,
-        default='age',
-        help='similarity criterion (supported: age, eigenvalues), '
+        default='eigenvectors',
+        help='similarity criterion (supported: age, eigenvectors), '
              'default=age')
 
     # NUMBER OF EIGENVALUES
     parser.add_argument(
-        '--n-eigenvalues',
+        '--n-eigenvectors',
         type=str,
         default=250,
-        help='length of the weight vector for the eigenvalues, '
+        help='length of the eigenvectors, '
              'default=250')
 
     # TRIPLET STRATEGY
@@ -310,6 +310,13 @@ def get_parameters_details(args, set_size, tra_sz, val_sz, tes_sz):
         details += '[Age scoped]: {}\n'.format(bool(args.age_scoped))
         details += '[Age relaxed]: {}\n'.format(bool(args.age_relaxed))
         details += '[Age interval]: {}\n'.format(bool(args.age_interval))
+    elif args.criterion == "eigenvectors":
+        thresholds = {"0": 0.3, "1": 0.5, "2": 0.8, "3": 1.0, "4": 1.3}
+        fr = open("eigenvectors_threshold.txt", "r")
+        counter = fr.read()
+        fr.close()
+        threshold = thresholds[counter]
+        details += "[Eigenvectos similarity threshold]: {}\n".format(threshold)
 
     details += "\n"
     details += '[Dataset size]: {}\n'.format(set_size)
@@ -402,6 +409,7 @@ def get_in_out_labels(args):
     else:
         raise Exception('Interval {} not supported'.format(args.age_interval))
 
+
 def get_optimizers_dict(learning_rate=0.001, beta_1=0.9, beta_2=0.999, amsgrad=False,
                         momentum=0.9, nesterov=False,
                         rho=0.9):
@@ -444,13 +452,14 @@ def get_labels(args):
             raise Exception('Wrong function for interval {}; '
                             'call function get_in_out_labels'
                             .format(args.age_interval))
-    elif args.criterion == "eigenvalues":
-        labels = from_pickle("{}eigenvalues.pickle".format(args.dataset_path))
-        eigen_d_keys = list(labels.keys())
-        eigen_l = []
-        for k in eigen_d_keys:
-            eigen_l.append(labels[k])
-        labels = eigen_l
+    elif args.criterion == "eigenvectors":
+        # labels = from_pickle("{}eigenvectors.pickle".format(args.dataset_path))
+        labels = from_pickle("{}0_39999_eigenvectors_normalized.pickle".format(args.dataset_path))
+        # eigen_d_keys = list(labels.keys())
+        # eigen_l = []
+        # for k in eigen_d_keys:
+        #     eigen_l.append(labels[k])
+        # labels = eigen_l
     else:
         raise Exception('Criterion {} not supported'.format(args.criterion))
 
@@ -580,16 +589,16 @@ def get_dgs(labels, args, argsDG, tra_sz=None, val_sz=None, tes_sz=None,
         else:
             raise Exception('Interval {} not supported'.format(args.age_interval))
 
-    elif args.criterion == "eigenvalues":
-        tra_dg = EigenvaluesDG(eigenvalues=labels[0:tra_sz],
-                               set_size=tra_sz,
-                               **argsDG)
-        val_dg = EigenvaluesDG(eigenvalues=labels[tra_sz:tra_sz + val_sz],
-                               set_size=val_sz,
-                               **argsDG)
-        tes_dg = EigenvaluesDG(eigenvalues=labels[tra_sz + val_sz:],
-                               set_size=tes_sz,
-                               **argsDG)
+    elif args.criterion == "eigenvectors":
+        tra_dg = EigenvectorsDG(eigenvectors=labels[0:tra_sz],
+                                set_size=tra_sz,
+                                **argsDG)
+        val_dg = EigenvectorsDG(eigenvectors=labels[tra_sz:tra_sz + val_sz],
+                                set_size=val_sz,
+                                **argsDG)
+        tes_dg = EigenvectorsDG(eigenvectors=labels[tra_sz + val_sz:],
+                                set_size=tes_sz,
+                                **argsDG)
     else:
         raise Exception('Criterion {} not supported'.format(args.criterion))
 
